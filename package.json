@@ -1,0 +1,24 @@
+{
+  "name": "selenium-winjs",
+  "version": "0.0.1",
+  "description": "Selenium driver for WinJS Metro apps via JsonWireProtocol.",
+  "main": "server.js",
+  "dependencies": {
+    "restify": "~1.4.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [
+    "selenium",
+    "acceptance",
+    "driver",
+    "jsonwire",
+    "testing",
+    "automation"
+  ],
+  "author": "Iraê <irae@irae.pro.br>",
+  "license": "BSD"
+}
