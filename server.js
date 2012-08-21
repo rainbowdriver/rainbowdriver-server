@@ -12,8 +12,8 @@ var restify = require('restify'),
 
 jsonwire.use(restify.bodyParser());
 
-browser_con.on('connection', function(conn) { // basic echo on sockjs example
-    conn.on('data', function(message) {
+browser_con.on('connection', function (conn) { // basic echo on sockjs example
+    conn.on('data', function (message) {
         conn.write(message);
     });
 });
@@ -44,8 +44,8 @@ jsonwire.get('/status', function (req, res, next) {
 
 jsonwire.post('/session', function (req, res, next) {
     var session = {
-        'id' : new Date().getTime(),
-        'desiredCapabilities' : JSON.parse(req.body).desiredCapabilities
+            'id' : new Date().getTime(),
+            'desiredCapabilities' : JSON.parse(req.body).desiredCapabilities
         };
     sessions[session.id] = session;
     res.header('Location', "/session/" + session.id);
@@ -61,7 +61,7 @@ jsonwire.get('/sessions', function (req, res, next) {
     res.send(sessions);
 });
 
-browser_con.installHandlers(jsonwire, {prefix:'/browser_con'});
+browser_con.installHandlers(jsonwire, {prefix: '/browser_con'});
 
 jsonwire.listen(8080, function () {
     console.log('Selenium-WinJS: %s listening at %s', jsonwire.name, jsonwire.url);
