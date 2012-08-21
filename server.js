@@ -48,7 +48,7 @@ jsonwire.post('/session', function (req, res, next) {
         'desiredCapabilities' : JSON.parse(req.body).desiredCapabilities
         };
     sessions.push(session);
-    res.header('Location', "/session/" + session);
+    res.header('Location', "/session/" + session.id);
     res.send(303);
 });
 
