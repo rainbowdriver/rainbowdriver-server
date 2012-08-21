@@ -1,7 +1,7 @@
 "use strict";
 var restify = require('restify'),
     os = require('os'),
-    sessions = [],
+    sessions = {},
     sockjs = require('sockjs'),
     fs = require('fs'),
 
@@ -47,9 +47,14 @@ jsonwire.post('/session', function (req, res, next) {
         'id' : new Date().getTime(),
         'desiredCapabilities' : JSON.parse(req.body).desiredCapabilities
         };
-    sessions.push(session);
+    sessions[session.id] = session;
     res.header('Location', "/session/" + session.id);
     res.send(303);
+});
+
+jsonwire.del('/session/:id', function (req, res, next) {
+    delete sessions[req.params.id];
+    res.send(204);
 });
 
 jsonwire.get('/sessions', function (req, res, next) {
