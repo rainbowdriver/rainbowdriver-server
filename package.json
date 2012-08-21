@@ -4,7 +4,8 @@
   "description": "Selenium driver for WinJS Metro apps via JsonWireProtocol.",
   "main": "server.js",
   "dependencies": {
-    "restify": "~1.4.4"
+    "restify": "~1.4.4",
+    "sockjs": "~0.3.1"
   },
   "devDependencies": {},
   "scripts": {
