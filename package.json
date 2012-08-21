@@ -21,5 +21,9 @@
     "automation"
   ],
   "author": "Iraê <irae@irae.pro.br>",
+  "contributors": [
+        "Alexandre Gaigalas <alexandre@gaigalas.net> (http://about.me/alganet)",
+        "Felipe Knorr Kuhn <contact@knorrium.info> (http://knorrium.info)"
+    ],
   "license": "BSD"
 }
