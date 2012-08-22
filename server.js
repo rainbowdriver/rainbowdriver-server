@@ -61,6 +61,34 @@ jsonwire.get('/wd/hub/sessions', function (req, res, next) {
     res.send(sessions);
 });
 
+jsonwire.post('/wd/hub/session/:id/url', function (req, res, next) {
+    //TODO: implement
+});
+
+jsonwire.get('/wd/hub/session/:id/title', function (req, res, next) {
+    //TODO: implement
+});
+
+jsonwire.post('/wd/hub/session/:id/element', function (req, res, next) {
+    //TODO: implement
+});
+
+jsonwire.post('/wd/hub/session/:id/element/:elementId/value', function (req, res, next) {
+    //TODO: implement
+});
+
+jsonwire.post('/wd/hub/session/:id/element/:elementId/click', function (req, res, next) {
+    //TODO: implement
+});
+
+jsonwire.post('/wd/hub/session/:id/element/:elementId/text', function (req, res, next) {
+    //TODO: implement
+});
+
+jsonwire.post('/wd/hub/session/:id/execute', function (req, res, next) {
+    //TODO: implement
+});
+
 browser_con.installHandlers(jsonwire, {prefix: '/browser_con'});
 
 jsonwire.listen(8080, function () {
