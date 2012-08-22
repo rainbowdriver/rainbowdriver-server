@@ -27,7 +27,7 @@ jsonwire.get('/static/:file', function (req, res, next) {
     }
 });
 
-jsonwire.get('/status', function (req, res, next) {
+jsonwire.get('/wd/hub/status', function (req, res, next) {
     res.send({
         "build" : {
             "version" : "0.1",
@@ -42,7 +42,7 @@ jsonwire.get('/status', function (req, res, next) {
     });
 });
 
-jsonwire.post('/session', function (req, res, next) {
+jsonwire.post('/wd/hub/session', function (req, res, next) {
     var session = {
             'id' : new Date().getTime(),
             'desiredCapabilities' : JSON.parse(req.body).desiredCapabilities
@@ -52,12 +52,12 @@ jsonwire.post('/session', function (req, res, next) {
     res.send(303);
 });
 
-jsonwire.del('/session/:id', function (req, res, next) {
+jsonwire.del('/wd/hub/session/:id', function (req, res, next) {
     delete sessions[req.params.id];
     res.send(204);
 });
 
-jsonwire.get('/sessions', function (req, res, next) {
+jsonwire.get('/wd/hub/sessions', function (req, res, next) {
     res.send(sessions);
 });
 
