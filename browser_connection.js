@@ -1,6 +1,6 @@
 
 module.exports = {
-    init: function (browser_connection, sessions) {
+    init: function (browser_connection, sessions, connections) {
         "use strict";
 
 
@@ -8,6 +8,10 @@ module.exports = {
             conn.on('data', function (message) {
                 conn.write(message);
             });
+            conn.on('close', function () {
+                connections.splice(connections.indexOf(conn), 1);
+            });
+            connections.push(conn);
         });
     }
 };
