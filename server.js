@@ -52,8 +52,8 @@ jsonwire.post('/wd/hub/session', function (req, res, next) {
     res.send(303);
 });
 
-jsonwire.del('/wd/hub/session/:id', function (req, res, next) {
-    delete sessions[req.params.id];
+jsonwire.del('/wd/hub/session/:sessionId', function (req, res, next) {
+    delete sessions[req.params.sessionId];
     res.send(204);
 });
 
@@ -61,31 +61,31 @@ jsonwire.get('/wd/hub/sessions', function (req, res, next) {
     res.send(sessions);
 });
 
-jsonwire.post('/wd/hub/session/:id/url', function (req, res, next) {
+jsonwire.post('/wd/hub/session/:sessionId/url', function (req, res, next) {
     //TODO: implement
 });
 
-jsonwire.get('/wd/hub/session/:id/title', function (req, res, next) {
+jsonwire.get('/wd/hub/session/:sessionId/title', function (req, res, next) {
     //TODO: implement
 });
 
-jsonwire.post('/wd/hub/session/:id/element', function (req, res, next) {
+jsonwire.post('/wd/hub/session/:sessionId/element', function (req, res, next) {
     //TODO: implement
 });
 
-jsonwire.post('/wd/hub/session/:id/element/:elementId/value', function (req, res, next) {
+jsonwire.post('/wd/hub/session/:sessionId/element/:id/value', function (req, res, next) {
     //TODO: implement
 });
 
-jsonwire.post('/wd/hub/session/:id/element/:elementId/click', function (req, res, next) {
+jsonwire.post('/wd/hub/session/:sessionId/element/:id/click', function (req, res, next) {
     //TODO: implement
 });
 
-jsonwire.post('/wd/hub/session/:id/element/:elementId/text', function (req, res, next) {
+jsonwire.post('/wd/hub/session/:sessionId/element/:id/text', function (req, res, next) {
     //TODO: implement
 });
 
-jsonwire.post('/wd/hub/session/:id/execute', function (req, res, next) {
+jsonwire.post('/wd/hub/session/:sessionId/execute', function (req, res, next) {
     //TODO: implement
 });
 
