@@ -5,7 +5,8 @@
   "main": "server.js",
   "dependencies": {
     "restify": "~1.4.4",
-    "sockjs": "~0.3.1"
+    "sockjs": "~0.3.1",
+    "color-terminal": "0.0.3-4"
   },
   "devDependencies": {},
   "scripts": {
@@ -22,8 +23,8 @@
   ],
   "author": "Iraê <irae@irae.pro.br>",
   "contributors": [
-        "Alexandre Gaigalas <alexandre@gaigalas.net> (http://about.me/alganet)",
-        "Felipe Knorr Kuhn <contact@knorrium.info> (http://knorrium.info)"
-    ],
+    "Alexandre Gaigalas <alexandre@gaigalas.net> (http://about.me/alganet)",
+    "Felipe Knorr Kuhn <contact@knorrium.info> (http://knorrium.info)"
+  ],
   "license": "BSD"
 }

@@ -4,6 +4,7 @@ var restify = require('restify'),
     sessions = {},
     sockjs = require('sockjs'),
     fs = require('fs'),
+    terminal = require('color-terminal'),
 
     sockjs_opts = {sockjs_url: "/static/sockjs-0.3.min.js"},
 
@@ -11,6 +12,20 @@ var restify = require('restify'),
     browser_con = sockjs.createServer(sockjs_opts);
 
 jsonwire.use(restify.bodyParser());
+
+jsonwire.use(function (req, res, next) {
+    terminal
+        .color('green').write(' > ' + req.method + ' ')
+        .color('cyan').write(req.path);
+    if ('body' in req && req.body) {
+        terminal
+            .write('\n\t')
+            .color('white')
+            .write(req.body);
+    }
+    terminal.reset().write('\n');
+    return next();
+});
 
 browser_con.on('connection', function (conn) { // basic echo on sockjs example
     conn.on('data', function (message) {
