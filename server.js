@@ -1,13 +1,13 @@
+/*globals jsonwire, sessions, connections, browser_connection */
 "use strict";
 var restify = require('restify'),
     sockjs = require('sockjs'),
-    terminal = require('color-terminal'),
+    terminal = require('color-terminal');
 
-    sessions = {},
-    connections = [],
-
-    jsonwire = restify.createServer({name: 'Selenium Winjs'}),
-    browser_connection = sockjs.createServer();
+global.sessions = {};
+global.connections = [];
+global.jsonwire = restify.createServer({name: 'Selenium Winjs'});
+global.browser_connection = sockjs.createServer();
 
 jsonwire.use(restify.bodyParser());
 
@@ -37,8 +37,8 @@ jsonwire.post('/pass', function passthrough(req, res, next) {
     }
 });
 
-require('./jsonwire.js').init(jsonwire, sessions);
-require('./browser_connection.js').init(browser_connection, sessions, connections);
+require('./jsonwire.js');
+require('./browser_connection.js');
 
 browser_connection.installHandlers(jsonwire, {prefix: '/browser_connection'});
 
