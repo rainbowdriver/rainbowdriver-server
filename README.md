@@ -1,12 +1,9 @@
-# Selenium-WinJS
+# rainbowdriver-server
 
-Selenium-WinJS is an attempt to implement the Selenium JSON Wire Protocol for WinJS applications.
+RainbowDriver is an attempt to implement the Selenium JSON Wire Protocol for WinJS applications.
 
-## Dependencies
+Your application must include the rainbowdriver-client library which to connect to the rainbowdriver-server.
 
-+ node-restify
-+ node-sockjs
-
-## External links
+## See also
 
 + http://code.google.com/p/selenium/wiki/JsonWireProtocol
