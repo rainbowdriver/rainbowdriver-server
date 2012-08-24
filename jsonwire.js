@@ -20,13 +20,23 @@ var os = require('os');
     });
 
     jsonwire.post('/wd/hub/session', function (req, res, next) {
-        var session = {
+        var interval,
+            session = {
                 'id' : new Date().getTime(),
                 'desiredCapabilities' : JSON.parse(req.body).desiredCapabilities
             };
         sessions[session.id] = session;
-        res.header('Location', "/session/" + session.id);
-        res.send(303);
+        setInterval(function waitingForBrowser () {
+            connections.forEach(function (conn) {
+                if(typeof conn.sessionId === 'undefined') {
+                    conn.sessionId = session.id;
+                    session.connection = conn;
+                    res.header('Location', "/session/" + session.id);
+                    res.send(303);
+                    return next();
+                }
+            });
+        }, 500);
     });
 
     jsonwire.del('/wd/hub/session/:sessionId', function (req, res, next) {
@@ -58,20 +68,33 @@ var os = require('os');
 
     jsonwire.post('/wd/hub/session/:sessionId/element', function (req, res, next) {
         var response,
-            returned_element = "";
+            returned_element,
+            session = sessions[req.params.sessionId];
 
-        if (req.params.value === "comments") {
-            returned_element = {"ELEMENT":"9661e41f-6c05-3f43-8254-b9d5c6f4f4a0"};
-        } else if (req.params.value === "your_comments") {
-            returned_element = {"ELEMENT":"fe67dce8-4f72-5847-a67f-7fa44703bc3f"};
-        } else if (req.params.value === "submit") {
-            returned_element = { "ELEMENT" : "0f565075-51d2-b44c-b258-48e64aa4bc81" };
+        if (req.params.using != "css selector") {
+            res.send(500);
+            return next();
         }
+
+        session.elements = session.elements || [];
+
+        if(req.params.value in session.elements) {
+            returned_element = session.elements[req.params.value];
+        } else {
+            returned_element = {
+                id: new Date().getTime(),
+                selector: 'selector_' + req.params.value
+            };
+            session.elements[returned_element.id] = returned_element;
+        }
+
         response = {
             "name": "findElement",
             "sessionId": req.params.sessionId,
             "status": 0,
-            "value": returned_element
+            "value": {
+                "ELEMENT": returned_element.id
+            }
         };
         res.send(200, response);
     });
@@ -86,12 +109,25 @@ var os = require('os');
     });
 
     jsonwire.post('/wd/hub/session/:sessionId/element/:id/click', function (req, res, next) {
-        res.send(200, {
-            "name": "clickElement",
-            "sessionId": req.params.sessionId,
-            "status": 0,
-            "value": "ok"
-        });
+        var session = sessions[req.params.sessionId],
+            element = session.elements && session.elements[req.params.id];
+
+        console.log(element, session);
+        if (element) {
+            session.connection.write(JSON.stringify({
+                command: 'click',
+                selector: element.selector.replace(/^selector_/, '')
+            }));
+            res.send(200, {
+                "name": "clickElement",
+                "sessionId": req.params.sessionId,
+                "status": 0,
+                "value": "ok"
+            });
+        } else {
+            res.send(404);
+            return next();
+        }
     });
 
     jsonwire.get('/wd/hub/session/:sessionId/element/:id/text', function (req, res, next) {
