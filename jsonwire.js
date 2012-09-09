@@ -131,13 +131,30 @@ var os = require('os');
     });
 
     jsonwire.get('/wd/hub/session/:sessionId/element/:id/text', function (req, res, next) {
-        var response = {
-            "name": "getElementText",
-            "sessionId": req.params.sessionId,
-            "status": 0,
-            "value": "Your comments: this is not a comment"
-        };
-        res.send(200, response);
+        var session = sessions[req.params.sessionId],
+            element = session.elements && session.elements[req.params.id];
+
+        if (element) {
+            session.connection.write(JSON.stringify({
+                command: 'getValue',
+                selector: element.selector.replace(/^selector_/, '')
+            }));
+
+            session.connection.on('data', function (message) {
+                var response = JSON.parse(message);
+                if (response.name === "getElementText") {
+                    res.send(200, {
+                        "name": "getElementText",
+                        "sessionId": req.params.sessionId,
+                        "status": 0,
+                        "value": response.value
+                    });
+                }
+            });
+        } else {
+            res.send(404);
+            return next();
+        }
     });
 
     jsonwire.post('/wd/hub/session/:sessionId/execute', function (req, res, next) {
