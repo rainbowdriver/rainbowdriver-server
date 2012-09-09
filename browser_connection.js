@@ -3,9 +3,9 @@
 (function () {
     "use strict";
 
-    browser_connection.on('connection', function (conn) { // basic echo on sockjs example
+    browser_connection.on('connection', function (conn) {
         conn.on('data', function (message) {
-            conn.write(message);
+            console.log("[BROWSER_CONN] " + message);
         });
         conn.on('close', function () {
             connections.splice(connections.indexOf(conn), 1);
