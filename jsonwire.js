@@ -113,12 +113,13 @@ var os = require('os');
             session.connection.on('data', function (message) {
                 var response = JSON.parse(message);
                 if (response.name === "sendKeysToElement") {
-                    res.send(200, {
+                    var response_body = {
                         "name": "sendKeysToElement",
                         "sessionId": req.params.sessionId,
                         "status": 0,
                         "value": response.value
-                    });
+                    };
+                    res.end(JSON.stringify(response_body));
                 }
             });
         } else {
