@@ -100,12 +100,31 @@ var os = require('os');
     });
 
     jsonwire.post('/wd/hub/session/:sessionId/element/:id/value', function (req, res, next) {
-        res.send(200, {
-            "name": "sendKeysToElement",
-            "sessionId": req.params.sessionId,
-            "status": 0,
-            "value": {"ELEMENT": req.params.id }
-        });
+        var session = sessions[req.params.sessionId],
+            element = session.elements && session.elements[req.params.id];
+
+        if (element) {
+            session.connection.write(JSON.stringify({
+                command: 'sendKeysToElement',
+                selector: element.selector.replace(/^selector_/, ''),
+                value: req.params.value
+            }));
+
+            session.connection.on('data', function (message) {
+                var response = JSON.parse(message);
+                if (response.name === "sendKeysToElement") {
+                    res.send(200, {
+                        "name": "sendKeysToElement",
+                        "sessionId": req.params.sessionId,
+                        "status": 0,
+                        "value": response.value
+                    });
+                }
+            });
+        } else {
+            res.send(404);
+            return next();
+        }
     });
 
     jsonwire.post('/wd/hub/session/:sessionId/element/:id/click', function (req, res, next) {
