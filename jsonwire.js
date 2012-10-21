@@ -58,12 +58,25 @@ var os = require('os');
     });
 
     jsonwire.get('/wd/hub/session/:sessionId/title', function (req, res, next) {
-        res.send(200, {
-            "name": "getTitle",
-            "sessionId": req.sessionId,
-            "status": 0,
-            "value": "I am a page title - Sauce Labs"
-        });
+        var session = sessions[req.params.sessionId];
+
+        if (session) {
+            session.connection.write(JSON.stringify({
+                command: 'getTitle'
+            }));
+
+            session.connection.on('data', function (message) {
+                var response = JSON.parse(message);
+                if (response.name === "getTitle") {
+                    res.send(200, {
+                        value: response.value
+                    });
+                }
+            });
+        } else {
+            res.send(404);
+            return next();
+        }
     });
 
     jsonwire.post('/wd/hub/session/:sessionId/element', function (req, res, next) {
