@@ -40,6 +40,18 @@ var os = require('os');
         }, 500);
     });
 
+    jsonwire.get('/wd/hub/session/:sessionId', function (req, res, next) {
+        var session = {
+                'sessionId' : req.params.sessionId,
+                'desiredCapabilities' : sessions[req.params.sessionId].desiredCapabilities,
+                'status': 0,
+                'value': sessions[req.params.sessionId].desiredCapabilities,
+                'proxy': { }
+        };
+        console.log(session);
+        res.send(200, session);
+    });
+
     jsonwire.del('/wd/hub/session/:sessionId', function (req, res, next) {
         delete sessions[req.params.sessionId];
         res.send(204);
