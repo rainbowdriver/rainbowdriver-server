@@ -121,13 +121,11 @@ var os = require('os');
         var session = sessions[req.params.sessionId],
             element = session.elements && session.elements[req.params.id];
 
-        var text = JSON.parse(req.body).value.join("");
         if (element) {
             session.connection.write(JSON.stringify({
                 command: 'sendKeysToElement',
                 selector: element.selector.replace(/^selector_/, ''),
                 value: req.params.value
-                value: text
             }));
 
             session.connection.on('data', function (message) {
