@@ -31,7 +31,7 @@ var os = require('os');
                 if(typeof conn.sessionId === 'undefined') {
                     conn.sessionId = session.id;
                     session.connection = conn;
-                    res.header('Location', "/session/" + session.id);
+                    res.header('Location', "/wd/hub/session/" + session.id);
                     res.send(303);
                     return next();
                 }
