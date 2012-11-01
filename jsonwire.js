@@ -32,6 +32,7 @@ var os = require('os');
                     conn.sessionId = session.id;
                     session.connection = conn;
                     res.header('Location', "/session/" + session.id);
+                    res.header('Location', "/wd/hub/session/" + session.id);
                     res.send(303);
                     return next();
                 }
