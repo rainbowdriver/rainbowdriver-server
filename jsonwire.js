@@ -87,7 +87,6 @@ var os = require('os');
             session = sessions[req.params.sessionId];
 
         if (req.params.using != "css selector") {
-        if (JSON.parse(req.body).using != "css selector") {
             res.send(500);
             return next();
         }
@@ -96,12 +95,10 @@ var os = require('os');
 
         if(req.params.value in session.elements) {
             returned_element = session.elements[req.params.value];
-            returned_element = session.elements[JSON.parse(req.body).value];
         } else {
             returned_element = {
                 id: new Date().getTime(),
                 selector: 'selector_' + req.params.value
-                selector: 'selector_' + JSON.parse(req.body).value
             };
             session.elements[returned_element.id] = returned_element;
         }
