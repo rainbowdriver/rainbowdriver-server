@@ -1,13 +1,27 @@
-/*globals jsonwire, sessions, connections, browser_connection, console */
+var sockjs = require('sockjs'),
+    terminal = require('color-terminal');
 
 (function () {
     "use strict";
-    var timeoutValue = 10*60*1000;
+    var timeoutValue = 10*60*1000,
+        connections = [],
+        browser_connection = sockjs.createServer();
 
-    browser_connection.on('connection', function (conn) {
+    function newConnection(conn) {
+        connections.push(conn);
+        terminal
+            .color('yellow')
+            .write('Browser ' + connections.indexOf(conn) + ' connected').write('\n')
+            .reset();
+
         conn.on('data', function (message) {
             var curDate = new Date().getTime();
-            console.log("[BROWSER_CONN] " + message);
+            terminal
+                .color('red')
+                .write(' < Browser ' + connections.indexOf(conn) + ' message').write('\n\t')
+                .color('white')
+                .write(message).write('\n')
+                .reset();
             if (!conn.lastUsed || conn.lastUsed - curDate < timeoutValue) {
                 conn.lastUsed = curDate;
                 if (conn.timer) {
@@ -21,7 +35,19 @@
         });
         conn.on('close', function () {
             connections.splice(connections.indexOf(conn), 1);
+            terminal
+                .color('yellow')
+                .write('Browser disconnected').write('\n')
+                .reset();
         });
-        connections.push(conn);
-    });
+    }
+
+    browser_connection.on('connection', newConnection);
+
+    exports.browser_connection = browser_connection;
+    exports.newConnection = newConnection;
+    exports.getConnections = function() {
+        return connections;
+    };
+
 })();

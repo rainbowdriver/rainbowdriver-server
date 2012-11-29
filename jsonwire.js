@@ -1,8 +1,34 @@
-/*globals jsonwire, sessions, connections, browser_connection, console */
-var os = require('os');
+var os = require('os'),
+    restify = require('restify'),
+    terminal = require('color-terminal');
 
 (function () {
     "use strict";
+    var sessions = {},
+        connections,
+        jsonwire = restify.createServer({name: 'Selenium Winjs'});
+
+    exports.setConnections = function(newConnections) {
+        connections = newConnections;
+    };
+
+    exports.jsonwire = jsonwire;
+
+    jsonwire.use(restify.bodyParser());
+
+    jsonwire.use(function wireLogger(req, res, next) {
+        terminal
+            .color('green').write(' > ' + req.method + ' ')
+            .color('cyan').write(req.path);
+        if ('body' in req && req.body) {
+            terminal
+                .write('\n\t')
+                .color('white')
+                .write(req.body);
+        }
+        terminal.reset().write('\n');
+        return next();
+    });
 
     jsonwire.get('/wd/hub/status', function (req, res, next) {
         res.send({
@@ -25,12 +51,13 @@ var os = require('os');
                 'id' : new Date().getTime(),
                 'desiredCapabilities' : JSON.parse(req.body).desiredCapabilities
             };
+
         sessions[session.id] = session;
+
         interval = setInterval(function waitingForBrowser () {
             connections.forEach(function (conn) {
                 if(!conn.sessionId) {
                     clearInterval(interval);
-                    console.log('Browser found.');
                     conn.sessionId = session.id;
                     session.connection = conn;
                     res.header('Location', "/wd/hub/session/" + session.id);
