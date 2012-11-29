@@ -248,5 +248,15 @@ var os = require('os');
         });
     });
 
-})();
+    jsonwire.get('/wd/hub/session/:sessionId/element/:id/attribute/:name', function (req, res, next) {
+        var session = sessions[req.params.sessionId],
+            element = session.elements && session.elements[req.params.id];
 
+        res.send(200, {
+            sessionId: req.params.sessionId,
+            name: 'getElementAttribute',
+            status: 0,
+            value: element[req.params.name]
+        });
+    });
+})();
