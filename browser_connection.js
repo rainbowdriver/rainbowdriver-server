@@ -1,61 +1,64 @@
-var sockjs = require('sockjs'),
-    terminal = require('color-terminal');
+var sockjs = require('sockjs');
 
 (function () {
-    "use strict";
-    var events,
-        timeoutValue = 10*60*1000,
-        connections = [],
-        browser_connection = sockjs.createServer();
+    var timeoutValue = 10*60*1000;
 
-    events = {
-        newConnection: function(conn) {
-            connections.push(conn);
-            terminal
-                .color('yellow')
-                .write('Browser ' + connections.indexOf(conn) + ' connected').write('\n')
-                .reset();
+    function Browser() {
+        this.connections = [];
+        this.browser_connection = sockjs.createServer();
+        this.browser_connection.on('connection', this.newConnection.bind(this));
+        return this;
+    }
 
-            conn.on('data', function(message) {
-                events.messageReceived(conn, message);
-            });
-            conn.on('close', function() {
-                events.connectionClosed(conn);
-            });
-        },
-        messageReceived: function(conn, message) {
-            var curDate = new Date().getTime();
-            terminal
-                .color('red')
-                .write(' < Browser ' + connections.indexOf(conn) + ' message').write('\n\t')
-                .color('white')
-                .write(message).write('\n')
-                .reset();
-            if (!conn.lastUsed || conn.lastUsed - curDate < timeoutValue) {
-                conn.lastUsed = curDate;
-                if (conn.timer) {
-                    clearTimeout(conn.timer);
-                }
-                conn.timer = setTimeout(function() {
-                    connections.splice(connections.indexOf(conn),1);
-                    conn.close();
-                }, timeoutValue + 100);
+    Browser.prototype.newConnection = function(conn) {
+        var that = this;
+        this.connections.push(conn);
+        // terminal
+        //     .color('yellow')
+        //     .write('Browser ' + this.connections.indexOf(conn) + ' connected').write('\n')
+        //     .reset();
+
+        conn.on('data', function(message) {
+            that.messageReceived.call(that, conn, message);
+        });
+        conn.on('close', function() {
+            that.connectionClosed.call(that, conn);
+        });
+    };
+
+    Browser.prototype.messageReceived = function(conn, message) {
+        var that = this,
+            curDate = new Date().getTime();
+        // terminal
+        //     .color('red')
+        //     .write(' < Browser ' + this.connections.indexOf(conn) + ' message').write('\n\t')
+        //     .color('white')
+        //     .write(message).write('\n')
+        //     .reset();
+        if (!conn.lastUsed || conn.lastUsed - curDate < timeoutValue) {
+            conn.lastUsed = curDate;
+            if (conn.timer) {
+                clearTimeout(conn.timer);
             }
-        },
-        connectionClosed: function(conn) {
-            connections.splice(connections.indexOf(conn), 1);
-            terminal
-                .color('yellow')
-                .write('Browser disconnected').write('\n')
-                .reset();
+            conn.timer = setTimeout(function() {
+                that.connections.splice(that.connections.indexOf(conn),1);
+                conn.close();
+            }, timeoutValue + 100);
         }
     };
 
-    browser_connection.on('connection', events.newConnection);
-    exports.browser_connection = browser_connection;
-    exports.api = events;
-    exports.getConnections = function() {
-        return connections;
+    Browser.prototype.connectionClosed = function(conn) {
+        this.connections.splice(this.connections.indexOf(conn), 1);
+        // terminal
+        //     .color('yellow')
+        //     .write('Browser disconnected').write('\n')
+        //     .reset();
     };
+
+    Browser.prototype.getConnections = function() {
+        return this.connections;
+    };
+
+    exports.Browser = Browser;
 
 })();

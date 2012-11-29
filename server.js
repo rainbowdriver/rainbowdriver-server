@@ -1,7 +1,8 @@
 
 var server = require('./jsonwire');
-var browser = require('./browser_connection');
+var browser = new (require('./browser_connection').Browser)();
 var jsonwire = server.jsonwire;
+
 
 browser.browser_connection.installHandlers(jsonwire, {prefix: '/browser_connection'});
 
