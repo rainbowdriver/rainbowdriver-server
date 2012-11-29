@@ -43,6 +43,7 @@ var os = require('os'),
                 "arch" : os.arch()
             }
         });
+        return next();
     });
 
     jsonwire.post('/wd/hub/session', function (req, res, next) {
@@ -66,6 +67,7 @@ var os = require('os'),
                 }
             });
         }, 2000);
+        return next();
     });
 
     jsonwire.get('/wd/hub/session/:sessionId', function (req, res, next) {
@@ -78,6 +80,7 @@ var os = require('os'),
         };
 
         res.send(200, session);
+        return next();
     });
 
     jsonwire.del('/wd/hub/session/:sessionId', function (req, res, next) {
@@ -88,10 +91,12 @@ var os = require('os'),
         });
         delete sessions[req.params.sessionId];
         res.send(204);
+        return next();
     });
 
     jsonwire.get('/wd/hub/sessions', function (req, res, next) {
         res.send(sessions);
+        return next();
     });
 
     jsonwire.post('/wd/hub/session/:sessionId/url', function (req, res, next) {
@@ -101,6 +106,7 @@ var os = require('os'),
             "status": 0,
             "value": ""
         });
+        return next();
     });
 
     jsonwire.get('/wd/hub/session/:sessionId/title', function (req, res, next) {
@@ -111,7 +117,7 @@ var os = require('os'),
                 command: 'getTitle'
             }));
 
-            session.connection.on('data', function (message) {
+            session.connection.once('data', function (message) {
                 var response = JSON.parse(message);
                 if (response.name === "getTitle") {
                     var response_body = {
@@ -122,8 +128,8 @@ var os = require('os'),
             });
         } else {
             res.send(404);
-            return next();
         }
+        return next();
     });
 
     jsonwire.post('/wd/hub/session/:sessionId/element', function (req, res, next) {
@@ -157,6 +163,7 @@ var os = require('os'),
             }
         };
         res.send(200, response);
+        return next();
     });
 
     jsonwire.post('/wd/hub/session/:sessionId/element/:id/value', function (req, res, next) {
@@ -172,7 +179,7 @@ var os = require('os'),
                 value: text
             }));
 
-            session.connection.on('data', function (message) {
+            session.connection.once('data', function (message) {
                 var response = JSON.parse(message);
                 if (response.name === "sendKeysToElement") {
                     var response_body = {
@@ -186,8 +193,8 @@ var os = require('os'),
             });
         } else {
             res.send(404);
-            return next();
         }
+        return next();
     });
 
     jsonwire.post('/wd/hub/session/:sessionId/element/:id/click', function (req, res, next) {
@@ -207,8 +214,8 @@ var os = require('os'),
             });
         } else {
             res.send(404);
-            return next();
         }
+        return next();
     });
 
     jsonwire.get('/wd/hub/session/:sessionId/element/:id/text', function (req, res, next) {
@@ -221,7 +228,7 @@ var os = require('os'),
                 selector: element.selector.replace(/^selector_/, '')
             }));
 
-            session.connection.on('data', function (message) {
+            session.connection.once('data', function (message) {
                 var response = JSON.parse(message);
                 if (response.name === "getElementText") {
                     res.send(200, {
@@ -234,8 +241,8 @@ var os = require('os'),
             });
         } else {
             res.send(404);
-            return next();
         }
+        return next();
     });
 
     jsonwire.get('/wd/hub/session/:sessionId/element/:id/name', function (req, res, next) {
@@ -248,7 +255,7 @@ var os = require('os'),
                 selector: element.selector.replace(/^selector_/, '')
             }));
 
-            session.connection.on('data', function (message) {
+            session.connection.once('data', function (message) {
                 var response = JSON.parse(message);
                 if (response.name === "getElementTagName") {
                     res.send(200, {
@@ -261,8 +268,8 @@ var os = require('os'),
             });
         } else {
             res.send(404);
-            return next();
         }
+        return next();
     });
 
     jsonwire.post('/wd/hub/session/:sessionId/execute', function (req, res, next) {
@@ -272,6 +279,7 @@ var os = require('os'),
             "status": 0,
             "value": "http://saucelabs.com/test/guinea-pig#"
         });
+        return next();
     });
 
     jsonwire.get('/wd/hub/session/:sessionId/element/:id/attribute/:name', function (req, res, next) {
@@ -285,7 +293,7 @@ var os = require('os'),
                 attribute: req.params.name
             }));
 
-            session.connection.on('data', function (message) {
+            session.connection.once('data', function (message) {
                 var response = JSON.parse(message);
                 if (response.name === "getElementAttribute") {
                     res.send(200, {
@@ -298,7 +306,7 @@ var os = require('os'),
             });
         } else {
             res.send(404);
-            return next();
         }
+        return next();
     });
 })();
