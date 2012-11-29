@@ -3,18 +3,27 @@ var sockjs = require('sockjs'),
 
 (function () {
     "use strict";
-    var timeoutValue = 10*60*1000,
+    var events,
+        timeoutValue = 10*60*1000,
         connections = [],
         browser_connection = sockjs.createServer();
 
-    function newConnection(conn) {
-        connections.push(conn);
-        terminal
-            .color('yellow')
-            .write('Browser ' + connections.indexOf(conn) + ' connected').write('\n')
-            .reset();
+    events = {
+        newConnection: function(conn) {
+            connections.push(conn);
+            terminal
+                .color('yellow')
+                .write('Browser ' + connections.indexOf(conn) + ' connected').write('\n')
+                .reset();
 
-        conn.on('data', function (message) {
+            conn.on('data', function(message) {
+                events.messageReceived(conn, message);
+            });
+            conn.on('close', function() {
+                events.connectionClosed(conn);
+            });
+        },
+        messageReceived: function(conn, message) {
             var curDate = new Date().getTime();
             terminal
                 .color('red')
@@ -32,20 +41,19 @@ var sockjs = require('sockjs'),
                     conn.close();
                 }, timeoutValue + 100);
             }
-        });
-        conn.on('close', function () {
+        },
+        connectionClosed: function(conn) {
             connections.splice(connections.indexOf(conn), 1);
             terminal
                 .color('yellow')
                 .write('Browser disconnected').write('\n')
                 .reset();
-        });
-    }
+        }
+    };
 
-    browser_connection.on('connection', newConnection);
-
+    browser_connection.on('connection', events.newConnection);
     exports.browser_connection = browser_connection;
-    exports.newConnection = newConnection;
+    exports.api = events;
     exports.getConnections = function() {
         return connections;
     };
