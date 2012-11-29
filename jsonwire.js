@@ -1,4 +1,4 @@
-/*globals jsonwire, sessions, connections, browser_connection */
+/*globals jsonwire, sessions, connections, browser_connection, console */
 var os = require('os');
 
 (function () {
@@ -26,9 +26,11 @@ var os = require('os');
                 'desiredCapabilities' : JSON.parse(req.body).desiredCapabilities
             };
         sessions[session.id] = session;
-        setInterval(function waitingForBrowser () {
+        interval = setInterval(function waitingForBrowser () {
             connections.forEach(function (conn) {
-                if(typeof conn.sessionId === 'undefined') {
+                if(!conn.sessionId) {
+                    clearInterval(interval);
+                    console.log('Browser found.');
                     conn.sessionId = session.id;
                     session.connection = conn;
                     res.header('Location', "/wd/hub/session/" + session.id);
@@ -36,7 +38,7 @@ var os = require('os');
                     return next();
                 }
             });
-        }, 500);
+        }, 2000);
     });
 
     jsonwire.get('/wd/hub/session/:sessionId', function (req, res, next) {
@@ -52,6 +54,11 @@ var os = require('os');
     });
 
     jsonwire.del('/wd/hub/session/:sessionId', function (req, res, next) {
+        connections.forEach(function (conn) {
+            if(parseInt(conn.sessionId,10) === parseInt(req.params.sessionId, 10)) {
+                delete conn.sessionId;
+            }
+        });
         delete sessions[req.params.sessionId];
         res.send(204);
     });
