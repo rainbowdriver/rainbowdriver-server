@@ -1,9 +1,14 @@
-var sockjs = require('sockjs');
+var sockjs = require('sockjs'),
+    terminal;
 
 (function () {
     var timeoutValue = 10*60*1000;
 
-    function Browser() {
+    function Browser(verbose) {
+        if(verbose) {
+            terminal = require('color-terminal');
+        }
+        this.verbose = verbose;
         this.connections = [];
         this.browser_connection = sockjs.createServer();
         this.browser_connection.on('connection', this.newConnection.bind(this));
@@ -13,10 +18,13 @@ var sockjs = require('sockjs');
     Browser.prototype.newConnection = function(conn) {
         var that = this;
         this.connections.push(conn);
-        // terminal
-        //     .color('yellow')
-        //     .write('Browser ' + this.connections.indexOf(conn) + ' connected').write('\n')
-        //     .reset();
+
+        if(this.verbose) {
+            terminal
+                .color('yellow')
+                .write('Browser ' + this.connections.indexOf(conn) + ' connected').write('\n')
+                .reset();
+        }
 
         conn.on('data', function(message) {
             that.messageReceived.call(that, conn, message);
@@ -29,12 +37,14 @@ var sockjs = require('sockjs');
     Browser.prototype.messageReceived = function(conn, message) {
         var that = this,
             curDate = new Date().getTime();
-        // terminal
-        //     .color('red')
-        //     .write(' < Browser ' + this.connections.indexOf(conn) + ' message').write('\n\t')
-        //     .color('white')
-        //     .write(message).write('\n')
-        //     .reset();
+        if(this.verbose) {
+            terminal
+                .color('red')
+                .write(' < Browser ' + this.connections.indexOf(conn) + ' message').write('\n\t')
+                .color('white')
+                .write(message).write('\n')
+                .reset();
+        }
         if (!conn.lastUsed || conn.lastUsed - curDate < timeoutValue) {
             conn.lastUsed = curDate;
             if (conn.timer) {
@@ -49,10 +59,12 @@ var sockjs = require('sockjs');
 
     Browser.prototype.connectionClosed = function(conn) {
         this.connections.splice(this.connections.indexOf(conn), 1);
-        // terminal
-        //     .color('yellow')
-        //     .write('Browser disconnected').write('\n')
-        //     .reset();
+        if(this.verbose) {
+            terminal
+                .color('yellow')
+                .write('Browser disconnected').write('\n')
+                .reset();
+        }
     };
 
     Browser.prototype.getConnections = function() {

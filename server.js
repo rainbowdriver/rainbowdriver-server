@@ -1,6 +1,6 @@
 
 var server = require('./jsonwire');
-var browser = new (require('./browser_connection').Browser)();
+var browser = new (require('./browser_connection').Browser)(true);
 var jsonwire = server.jsonwire;
 
 
