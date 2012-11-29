@@ -49,7 +49,7 @@ var os = require('os');
                 'value': sessions[req.params.sessionId].desiredCapabilities,
                 'proxy': { }
         };
-        console.log(session);
+
         res.send(200, session);
     });
 
@@ -122,7 +122,7 @@ var os = require('os');
 
             session.connection.on('data', function (message) {
                 var response = JSON.parse(message);
-                console.log(response);
+
                 if (response.name === "findElement") {
                     session.elements[response.value] = response.element;
                     var response_body = {
@@ -174,7 +174,6 @@ var os = require('os');
         var session = sessions[req.params.sessionId],
             element = session.elements && session.elements[req.params.id];
 
-        console.log(element, session);
         if (element) {
             session.connection.write(JSON.stringify({
                 command: 'click',
