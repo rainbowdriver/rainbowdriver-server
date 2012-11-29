@@ -109,34 +109,27 @@ var os = require('os');
             return next();
         }
 
-        session.elements = session.elements || {};
+        session.elements = session.elements || [];
 
-        if (req.params.value in session.elements) {
+        if(req.params.value in session.elements) {
             returned_element = session.elements[JSON.parse(req.body).value];
-         } else {
-            session.connection.write(JSON.stringify({
-                command: 'findElement',
-                using: JSON.parse(req.body).using,
-                value: JSON.parse(req.body).value
-            }));
-
-            session.connection.on('data', function (message) {
-                var response = JSON.parse(message);
-
-                if (response.name === "findElement") {
-                    session.elements[response.value] = response.element;
-                    var response_body = {
-                        "name": "findElement",
-                        "sessionId": req.params.sessionId,
-                        "status": 0,
-                        "value": {
-                            "ELEMENT": response.value
-                        }
-                    };
-                    res.send(200, response_body);
-                }
-            });
+        } else {
+            returned_element = {
+                id: new Date().getTime(),
+                selector: 'selector_' + JSON.parse(req.body).value
+            };
+            session.elements[returned_element.id] = returned_element;
         }
+
+        response = {
+            "name": "findElement",
+            "sessionId": req.params.sessionId,
+            "status": 0,
+            "value": {
+                "ELEMENT": returned_element.id
+            }
+        };
+        res.send(200, response);
     });
 
     jsonwire.post('/wd/hub/session/:sessionId/element/:id/value', function (req, res, next) {
@@ -258,11 +251,27 @@ var os = require('os');
         var session = sessions[req.params.sessionId],
             element = session.elements && session.elements[req.params.id];
 
-        res.send(200, {
-            sessionId: req.params.sessionId,
-            name: 'getElementAttribute',
-            status: 0,
-            value: element[req.params.name]
-        });
+        if (element) {
+            session.connection.write(JSON.stringify({
+                command: 'getElementAttribute',
+                selector: element.selector.replace(/^selector_/, ''),
+                attribute: req.params.name
+            }));
+
+            session.connection.on('data', function (message) {
+                var response = JSON.parse(message);
+                if (response.name === "getElementAttribute") {
+                    res.send(200, {
+                        "name": "getElementAttribute",
+                        "sessionId": req.params.sessionId,
+                        "status": 0,
+                        "value": response.value
+                    });
+                }
+            });
+        } else {
+            res.send(404);
+            return next();
+        }
     });
 })();
