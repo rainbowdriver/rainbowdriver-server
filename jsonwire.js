@@ -139,26 +139,40 @@ var os = require('os'),
 
         session.elements = session.elements || [];
 
-        if(req.params.value in session.elements) {
-            returned_element = session.elements[JSON.parse(req.body).value];
-        } else {
-            returned_element = {
-                id: new Date().getTime(),
-                selector: 'selector_' + JSON.parse(req.body).value
-            };
-            session.elements[returned_element.id] = returned_element;
-        }
+        session.connection.write(JSON.stringify({
+            command: 'findElement',
+            selector: JSON.parse(req.body).value
+        }));
 
-        response = {
-            "name": "findElement",
-            "sessionId": req.params.sessionId,
-            "status": 0,
-            "value": {
-                "ELEMENT": returned_element.id
+        session.connection.once('data', function (message) {
+            var response = JSON.parse(message);
+
+            if (response.name === "findElement") {
+                if (response.status === 0) {
+                    session.elements[response.elementId] = {
+                        id: response.elementId,
+                        selector: 'selector_' + response.selector
+                    };
+                    var response_body = {
+                        "name": "findElement",
+                        "sessionId": req.params.sessionId,
+                        "status": 0,
+                        "value": {
+                            "ELEMENT": response.elementId
+                        }
+                    };
+                    res.send(200, response_body);
+                } else if (response.status === 7) {
+                    var response_body = {
+                        "name": "findElement",
+                        "sessionId": req.params.sessionId,
+                        "status": 7,
+                        "value": {}
+                    };
+                    res.end(JSON.stringify(response_body));
+                }
             }
-        };
-        res.send(200, response);
-        return next();
+        });
     });
 
     jsonwire.post('/wd/hub/session/:sessionId/element/:id/value', function (req, res, next) {
