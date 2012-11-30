@@ -65,6 +65,37 @@
     "colorize": {
       "version": "0.1.0"
     },
+    "mocha": {
+      "version": "1.7.3",
+      "dependencies": {
+        "commander": {
+          "version": "0.6.1"
+        },
+        "growl": {
+          "version": "1.6.1"
+        },
+        "jade": {
+          "version": "0.26.3",
+          "dependencies": {
+            "mkdirp": {
+              "version": "0.3.0"
+            }
+          }
+        },
+        "diff": {
+          "version": "1.0.2"
+        },
+        "debug": {
+          "version": "0.7.0"
+        },
+        "mkdirp": {
+          "version": "0.3.3"
+        },
+        "ms": {
+          "version": "0.3.0"
+        }
+      }
+    },
     "sinon": {
       "version": "1.5.2",
       "dependencies": {

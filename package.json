@@ -9,10 +9,11 @@
     "colorize": "~0.1.0"
   },
   "devDependencies": {
-    "sinon": "~1.5.2"
+    "sinon": "~1.5.2",
+    "mocha": "~1.7.3"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node_modules/mocha/bin/mocha",
     "start": "node server.js"
   },
   "keywords": [
