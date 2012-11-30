@@ -13,11 +13,16 @@ client = restify.createJsonClient({
 });
 
 describe('JSON Wire API', function(){
+    afterEach(function(){
+        var a;
+        for(a in api.sessions) {
+            delete api.sessions[a];
+        }
+    });
 
     describe('/wd/hub/status', function(){
-
-        it('respond with os properties', function(){
-            var expect = {
+        it('respond with os properties', function(done){
+            var expected = {
                     "build" : {
                         "version" : "0.1",
                         "revision" : "unknown",
@@ -36,6 +41,36 @@ describe('JSON Wire API', function(){
             });
         });
     });
+
+    describe('/wd/hub/session/:sessionId/element', function(){
+        it('404 when session dont\'t exist', function(done){
+            client.post('/wd/hub/session/666/element', {}, function(err, req, res, obj) {
+                assert.equal(res.statusCode, 404);
+                done();
+            });
+        });
+        it('500 when selector not provided', function(done){
+            api.sessions['500'] = {};
+            client.post('/wd/hub/session/500/element', {}, function(err, req, res, obj) {
+                assert.equal(res.statusCode, 500);
+                done();
+            });
+        });
+        it('should look for element in browser', function(done){
+            var conn = new StubConnection();
+            conn.message = JSON.stringify({
+                name: 'findElement',
+                status: 0
+            });
+            api.sessions.aaa = {
+                connection: conn
+            };
+            client.post('/wd/hub/session/aaa/element', { using: "css selector"}, function(err, req, res, obj) {
+                assert.deepEqual(obj, { name: 'findElement', sessionId: 'aaa', status: 0, value: {} });
+                done();
+            });
+        });
+    });
 });
 
 function StubConnection(attrs) {
@@ -49,7 +84,11 @@ function StubConnection(attrs) {
 
 util.inherits(StubConnection, events.EventEmitter);
 
-StubConnection.prototype.close = function () {
-    this.emit('close');
+StubConnection.prototype.close = sinon.stub();
+StubConnection.prototype.write = function() {
+    var that = this;
+    process.nextTick(function(){
+        that.emit('data', that.message);
+    });
 };
 

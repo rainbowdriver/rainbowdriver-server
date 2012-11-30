@@ -1,7 +1,7 @@
 var os = require('os'),
     restify = require('restify'),
     colorize = require('colorize'),
-    cconsole = colorize.console;
+    cconsole = {log:function(){}};
 
 (function () {
     "use strict";
@@ -12,6 +12,12 @@ var os = require('os'),
     exports.setConnections = function(newConnections) {
         connections = newConnections;
     };
+
+    exports.verbosity = function() {
+        cconsole = colorize.console;
+    };
+
+    exports.sessions = sessions;
 
     exports.jsonwire = jsonwire;
 
@@ -132,6 +138,11 @@ var os = require('os'),
             returned_element,
             session = sessions[req.params.sessionId];
 
+        if (!session) {
+            res.send(404);
+            return next();
+        }
+
         if (JSON.parse(req.body).using != "css selector") {
             res.send(500);
             return next();
@@ -145,7 +156,8 @@ var os = require('os'),
         }));
 
         session.connection.once('data', function (message) {
-            var response = JSON.parse(message);
+            var response_body,
+                response = JSON.parse(message);
 
             if (response.name === "findElement") {
                 if (response.status === 0) {
@@ -153,7 +165,7 @@ var os = require('os'),
                         id: response.elementId,
                         selector: 'selector_' + response.selector
                     };
-                    var response_body = {
+                    response_body = {
                         "name": "findElement",
                         "sessionId": req.params.sessionId,
                         "status": 0,
@@ -163,7 +175,7 @@ var os = require('os'),
                     };
                     res.send(200, response_body);
                 } else if (response.status === 7) {
-                    var response_body = {
+                    response_body = {
                         "name": "findElement",
                         "sessionId": req.params.sessionId,
                         "status": 7,
