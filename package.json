@@ -13,7 +13,7 @@
     "mocha": "~1.7.3"
   },
   "scripts": {
-    "test": "node_modules/mocha/bin/mocha --reporter spec",
+    "test": "node node_modules/mocha/bin/mocha --reporter spec",
     "start": "node server.js"
   },
   "keywords": [
