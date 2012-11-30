@@ -13,17 +13,12 @@ var sockjs = require('sockjs'),
     }
 
     Browser.prototype.newConnection = function(conn) {
-        var that = this;
         this.connections.push(conn);
 
         cconsole.log('#yellow[Browser ' + this.connections.indexOf(conn) + ' connected]');
 
-        conn.on('data', function(message) {
-            that.messageReceived.call(that, conn, message);
-        });
-        conn.on('close', function() {
-            that.connectionClosed.call(that, conn);
-        });
+        conn.on('data', this.messageReceived.bind(this, conn));
+        conn.on('close', this.connectionClosed.bind(this, conn));
     };
 
     Browser.prototype.messageReceived = function(conn, message) {
@@ -48,10 +43,6 @@ var sockjs = require('sockjs'),
     Browser.prototype.connectionClosed = function(conn) {
         cconsole.log('#yellow[Browser ' + this.connections.indexOf(conn) + ' disconnected]');
         this.connections.splice(this.connections.indexOf(conn), 1);
-    };
-
-    Browser.prototype.getConnections = function() {
-        return this.connections;
     };
 
     exports.Browser = Browser;
