@@ -88,7 +88,7 @@ describe('Browser', function(){
 
     });
 
-    describe('newConnection', function(){
+    describe('connectionClosed', function(){
 
         it('should remove inactive connections', function(){
             var browser = new b.Browser(),
