@@ -1,6 +1,7 @@
 var os = require('os'),
     restify = require('restify'),
-    terminal = require('color-terminal');
+    colorize = require('colorize'),
+    cconsole = colorize.console;
 
 (function () {
     "use strict";
@@ -17,16 +18,10 @@ var os = require('os'),
     jsonwire.use(restify.bodyParser());
 
     jsonwire.use(function wireLogger(req, res, next) {
-        terminal
-            .color('green').write(' > ' + req.method + ' ')
-            .color('cyan').write(req.path);
+        cconsole.log('#green[ > ' + req.method + ' ] #cyan[' + req.path + ']');
         if ('body' in req && req.body) {
-            terminal
-                .write('\n\t')
-                .color('white')
-                .write(req.body);
+            cconsole.log('\t' + req.body);
         }
-        terminal.reset().write('\n');
         return next();
     });
 

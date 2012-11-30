@@ -1,14 +1,11 @@
 var sockjs = require('sockjs'),
-    terminal;
+    colorize = require('colorize'),
+    cconsole = colorize.console;
 
 (function () {
     var timeoutValue = 10*60*1000;
 
-    function Browser(verbose) {
-        if(verbose) {
-            terminal = require('color-terminal');
-        }
-        this.verbose = verbose;
+    function Browser() {
         this.connections = [];
         this.browser_connection = sockjs.createServer();
         this.browser_connection.on('connection', this.newConnection.bind(this));
@@ -19,12 +16,7 @@ var sockjs = require('sockjs'),
         var that = this;
         this.connections.push(conn);
 
-        if(this.verbose) {
-            terminal
-                .color('yellow')
-                .write('Browser ' + this.connections.indexOf(conn) + ' connected').write('\n')
-                .reset();
-        }
+        cconsole.log('#yellow[Browser ' + this.connections.indexOf(conn) + ' connected]');
 
         conn.on('data', function(message) {
             that.messageReceived.call(that, conn, message);
@@ -37,14 +29,10 @@ var sockjs = require('sockjs'),
     Browser.prototype.messageReceived = function(conn, message) {
         var that = this,
             curDate = new Date().getTime();
-        if(this.verbose) {
-            terminal
-                .color('red')
-                .write(' < Browser ' + this.connections.indexOf(conn) + ' message').write('\n\t')
-                .color('white')
-                .write(message).write('\n')
-                .reset();
-        }
+
+        cconsole.log('#red[ < Browser ' + this.connections.indexOf(conn) + ' message]');
+        cconsole.log('\t' + message);
+
         if (!conn.lastUsed || conn.lastUsed - curDate < timeoutValue) {
             conn.lastUsed = curDate;
             if (conn.timer) {
@@ -58,13 +46,8 @@ var sockjs = require('sockjs'),
     };
 
     Browser.prototype.connectionClosed = function(conn) {
+        cconsole.log('#yellow[Browser ' + this.connections.indexOf(conn) + ' disconnected]');
         this.connections.splice(this.connections.indexOf(conn), 1);
-        if(this.verbose) {
-            terminal
-                .color('yellow')
-                .write('Browser disconnected').write('\n')
-                .reset();
-        }
     };
 
     Browser.prototype.getConnections = function() {

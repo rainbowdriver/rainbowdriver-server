@@ -6,9 +6,11 @@
   "dependencies": {
     "restify": "~1.4.4",
     "sockjs": "~0.3.1",
-    "color-terminal": "0.0.3-4"
+    "colorize": "~0.1.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "sinon": "~1.5.2"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
