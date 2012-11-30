@@ -22,6 +22,17 @@ StubConnection.prototype.close = function () {
 
 describe('Browser', function(){
 
+    it('init properlly', function(){
+        var browser = new b.Browser(),
+            conn = new StubConnection();
+
+        assert(Array.isArray(browser.connections));
+        assert(typeof(browser.browser_connection.installHandlers) !== 'undefined');
+
+        browser.browser_connection.emit('connection', conn);
+        assert(browser.connections.length === 1);
+    });
+
     describe('newConnection', function(){
 
         it('should increment connections', function(){
