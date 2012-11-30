@@ -1,11 +1,11 @@
 var sockjs = require('sockjs'),
-    colorize = require('colorize'),
-    cconsole = colorize.console;
+    colorize = require('colorize');
 
 (function () {
     var timeoutValue = 10*60*1000;
 
-    function Browser() {
+    function Browser(verbose) {
+        this.cconsole = verbose ? colorize.console : {log:function(){}};
         this.connections = [];
         this.browser_connection = sockjs.createServer();
         this.browser_connection.on('connection', this.newConnection.bind(this));
@@ -15,7 +15,7 @@ var sockjs = require('sockjs'),
     Browser.prototype.newConnection = function(conn) {
         this.connections.push(conn);
 
-        cconsole.log('#yellow[Browser ' + this.connections.indexOf(conn) + ' connected]');
+        this.cconsole.log('#yellow[Browser ' + this.connections.indexOf(conn) + ' connected]');
 
         conn.on('data', this.messageReceived.bind(this, conn));
         conn.on('close', this.connectionClosed.bind(this, conn));
@@ -25,8 +25,8 @@ var sockjs = require('sockjs'),
         var that = this,
             curDate = new Date().getTime();
 
-        cconsole.log('#red[ < Browser ' + this.connections.indexOf(conn) + ' message]');
-        cconsole.log('\t' + message);
+        this.cconsole.log('#red[ < Browser ' + this.connections.indexOf(conn) + ' message]');
+        this.cconsole.log('\t' + message);
 
         if (!conn.lastUsed || conn.lastUsed - curDate < timeoutValue) {
             conn.lastUsed = curDate;
@@ -41,7 +41,7 @@ var sockjs = require('sockjs'),
     };
 
     Browser.prototype.connectionClosed = function(conn) {
-        cconsole.log('#yellow[Browser ' + this.connections.indexOf(conn) + ' disconnected]');
+        this.cconsole.log('#yellow[Browser ' + this.connections.indexOf(conn) + ' disconnected]');
         this.connections.splice(this.connections.indexOf(conn), 1);
     };
 
