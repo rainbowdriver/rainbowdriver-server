@@ -81,7 +81,7 @@ var os = require('os'),
     jsonwire.del('/wd/hub/session/:sessionId', function (req, res, next) {
         connections.forEach(function (conn) {
             if(parseInt(conn.sessionId,10) === parseInt(req.params.sessionId, 10)) {
-                delete conn.sessionId;
+                conn.end();
             }
         });
         delete sessions[req.params.sessionId];
@@ -201,12 +201,14 @@ var os = require('os'),
                 command: 'click',
                 selector: element.selector.replace(/^selector_/, '')
             }));
-            res.send(200, {
-                "name": "clickElement",
-                "sessionId": req.params.sessionId,
-                "status": 0,
-                "value": "ok"
-            });
+            setTimeout(function() {
+                res.send(200, {
+                    "name": "clickElement",
+                    "sessionId": req.params.sessionId,
+                    "status": 0,
+                    "value": "ok"
+                });
+            }, 1000);
         } else {
             res.send(404);
         }

@@ -5,7 +5,7 @@
   "main": "server.js",
   "dependencies": {
     "restify": "~1.4.4",
-    "sockjs": "~0.3.1",
+    "sockjs": "~0.3.4",
     "colorize": "~0.1.0"
   },
   "devDependencies": {
