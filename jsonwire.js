@@ -172,6 +172,34 @@ var os = require('os'),
                     res.end(JSON.stringify(response_body));
                 }
             }
+            return next();
+        });
+    });
+
+    jsonwire.get('/wd/hub/session/:sessionId/element/:elementId/displayed', function (req, res, next) {
+        var session = sessions[req.params.sessionId],
+            element = session.elements && session.elements[req.params.elementId];
+
+        session.connection.write(JSON.stringify({
+            command: 'isElementDisplayed',
+            selector: element.selector.replace(/^selector_/, '')
+        }));
+
+        session.connection.once('data', function (message) {
+            var response = JSON.parse(message);
+
+            if (response.name === "isElementDisplayed") {
+                if (response.status === 0) {
+                    var response_body = {
+                        "name": "isElementDisplayed",
+                        "sessionId": req.params.sessionId,
+                        "status": 0,
+                        "value": response.value
+                    };
+                    res.send(200, response_body);
+                }
+            }
+            return next();
         });
     });
 
