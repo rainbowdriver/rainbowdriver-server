@@ -49,10 +49,10 @@ describe('JSON Wire API', function(){
                 done();
             });
         });
-        it('500 when selector not provided', function(done){
-            api.sessions['500'] = {};
-            client.post('/wd/hub/session/500/element', {}, function(err, req, res, obj) {
-                assert.equal(res.statusCode, 500);
+        it('501 when selector not provided', function(done){
+            api.sessions['501'] = {};
+            client.post('/wd/hub/session/501/element', {}, function(err, req, res, obj) {
+                assert.equal(res.statusCode, 501);
                 done();
             });
         });
