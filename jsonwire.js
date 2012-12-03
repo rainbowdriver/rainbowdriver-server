@@ -328,12 +328,25 @@ var os = require('os'),
     });
 
     jsonwire.post('/wd/hub/session/:sessionId/execute', function (req, res, next) {
-        res.send(200, {
-            "name": "executeScript",
-            "sessionId": req.params.sessionId,
-            "status": 0,
-            "value": "http://saucelabs.com/test/guinea-pig#"
-        });
+        var session = sessions[req.params.sessionId];
+        if (session) {
+            session.connection.write(JSON.stringify({
+                command: 'executeScript',
+                script: JSON.parse(req.body).script
+            }));
+
+            session.connection.once('data', function (message) {
+                var response = JSON.parse(message);
+                if (response.name === "executeScript") {
+                    var response_body = {
+                        "value": response.value
+                    };
+                    res.send(200,response_body);
+                }
+            });
+        } else {
+            res.send(404);
+        }
         return next();
     });
 
