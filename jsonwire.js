@@ -144,7 +144,8 @@ var os = require('os'),
         }
 
         if (JSON.parse(req.body).using != "css selector") {
-            res.send(500);
+            res.contentType = "json";
+            res.send(501, { value: "Only CSS selectors are supported right now. Sorry about that." });
             return next();
         }
 
@@ -181,7 +182,9 @@ var os = require('os'),
                         "status": 7,
                         "value": {}
                     };
-                    res.end(JSON.stringify(response_body));
+                    res.contentType = "json";
+                    res.charSet = "UTF-8";
+                    res.send(200, response_body);
                 }
             }
             return next();
@@ -232,12 +235,13 @@ var os = require('os'),
                 var response = JSON.parse(message);
                 if (response.name === "sendKeysToElement") {
                     var response_body = {
-                        "name": "sendKeysToElement",
                         "sessionId": req.params.sessionId,
                         "status": 0,
                         "value": response.value
                     };
-                    res.end(JSON.stringify(response_body));
+                    res.contentType = "json";
+                    res.charSet = "UTF-8";
+                    res.send(200, response_body);
                 }
             });
         } else {
