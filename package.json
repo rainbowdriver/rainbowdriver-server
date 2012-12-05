@@ -1,7 +1,7 @@
 {
-  "name": "selenium-winjs",
+  "name": "rainbowdriver-server",
   "version": "0.0.1",
-  "description": "Selenium driver for WinJS Metro apps via JsonWireProtocol.",
+  "description": "Component of the rainbowdriver suite.",
   "main": "server.js",
   "dependencies": {
     "restify": "~1.4.4",
@@ -24,7 +24,7 @@
     "testing",
     "automation"
   ],
-  "author": "Iraê <irae@irae.pro.br>",
+  "author": "Iraê <irae@irae.pro.br> (http://about.me/irae)",
   "contributors": [
     "Alexandre Gaigalas <alexandre@gaigalas.net> (http://about.me/alganet)",
     "Felipe Knorr Kuhn <contact@knorrium.info> (http://knorrium.info)"
