@@ -355,7 +355,10 @@ var os = require('os'),
         var session = sessions[req.params.sessionId];
 
         if (session) {
-            exec("powershell .\\snap.ps1", function (error, stdout, stderr) {
+            exec("powershell .\\helpers\\snap.ps1", function (error, stdout, stderr) {
+                res.send(200, {});
+                return;
+                
                 session.connection.write(JSON.stringify({
                     command: 'snap',
                     edge: JSON.parse(req.body).edge
