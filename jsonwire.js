@@ -32,6 +32,11 @@ var os = require('os'),
         return next();
     });
 
+    jsonwire.on('NotFound', function (req, res, next) {
+        cconsole.log('#red[ Command Not Implemented ]');
+        cconsole.log('#green[ > ' + req.method + ' ] #cyan[' + req.path + ']');
+    });
+
     jsonwire.get('/wd/hub/status', function (req, res, next) {
         res.send({
             "build" : {
