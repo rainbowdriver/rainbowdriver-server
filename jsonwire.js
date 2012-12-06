@@ -356,6 +356,17 @@ var os = require('os'),
 
         if (session) {
             exec("powershell .\\snap.ps1", function (error, stdout, stderr) {
+                session.connection.write(JSON.stringify({
+                    command: 'snap',
+                    edge: JSON.parse(req.body).edge
+                }));
+
+                session.connection.once('data', function (message) {
+                    var response = JSON.parse(message);
+                    if (response.name === "snap") {
+                        res.send(200, {});
+                    }
+                });
             });
 
         } else {
