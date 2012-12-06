@@ -1,7 +1,8 @@
 var os = require('os'),
     restify = require('restify'),
     colorize = require('colorize'),
-    cconsole = {log:function(){}};
+    cconsole = {log:function(){}},
+    exec = require('child_process').exec;
 
 (function () {
     "use strict";
@@ -344,6 +345,19 @@ var os = require('os'),
                     res.send(200,response_body);
                 }
             });
+        } else {
+            res.send(404);
+        }
+        return next();
+    });
+
+    jsonwire.post('/wd/hub/session/:sessionId/snap', function (req, res, next) {
+        var session = sessions[req.params.sessionId];
+
+        if (session) {
+            exec("powershell .\\snap.ps1", function (error, stdout, stderr) {
+            });
+
         } else {
             res.send(404);
         }
