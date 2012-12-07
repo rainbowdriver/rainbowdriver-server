@@ -70,11 +70,10 @@ var os = require('os'),
                     session.connection = conn;
                     res.header('Location', "/wd/hub/session/" + session.id);
                     res.send(303);
-                    return next();
+                    next();
                 }
             });
         }, 2000);
-        return next();
     });
 
     jsonwire.get('/wd/hub/session/:sessionId', function (req, res, next) {
@@ -181,6 +180,7 @@ var os = require('os'),
                         }
                     };
                     res.send(200, response_body);
+                    next();
                 } else if (response.status === 7) {
                     response_body = {
                         "name": "findElement",
@@ -190,10 +190,10 @@ var os = require('os'),
                     };
                     res.contentType = "json";
                     res.charSet = "UTF-8";
-                    res.send(200, response_body);
+                    res.send(500, response_body);
+                    next();
                 }
             }
-            return next();
         });
     });
 
@@ -410,4 +410,10 @@ var os = require('os'),
         }
         return next();
     });
+
+    jsonwire.on('after', function responseLogger(req, res) {
+        cconsole.log('#green[ < ' + res.statusCode + ' ] #cyan[' + req.path + ']');
+        cconsole.log('\t' + res._body);
+    });
+
 })();
