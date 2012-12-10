@@ -71,6 +71,47 @@ describe('JSON Wire API', function(){
                 done();
             });
         });
+        it('should find sub elements in browser', function(done){
+            var conn = new StubConnection();
+            var foo_selector = '.foo';
+            var sub_foo_selector = '.sub.foo';
+            var composed_selector = foo_selector + ' ' + sub_foo_selector;
+            var sub_foo_id = 'sub_foo';
+            var write_spy = sinon.spy(conn, 'write');
+
+            conn.message = JSON.stringify({
+                name: 'findElement',
+                status: 0,
+                elementId: 'sub_foo',
+                selector: composed_selector
+            });
+
+            api.sessions.aaa = {
+                connection: conn,
+                elements: {
+                    foo: {
+                        id: 12345,
+                        selector: foo_selector
+                    }
+                }
+            };
+
+            client.post('/wd/hub/session/aaa/element/foo/element', { using: "css selector", value: sub_foo_selector}, function(err, req, res, obj) {
+                assert(write_spy.calledOnce);
+
+                assert(write_spy.calledWithExactly(JSON.stringify({
+                    command: "findElement",
+                    selector: composed_selector
+                })));
+
+                assert.deepEqual(api.sessions.aaa.elements.sub_foo, { id: sub_foo_id, selector: 'selector_' + composed_selector });
+                
+                assert.deepEqual(obj, { name: 'findElement', sessionId: 'aaa', status: 0, value: {"ELEMENT": sub_foo_id} });
+                
+                conn.write.restore();
+                done();
+            });
+        });
         it('proper response when element don\'t exist', function(done){
             var conn = new StubConnection();
             conn.message = JSON.stringify({

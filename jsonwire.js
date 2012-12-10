@@ -197,6 +197,67 @@ var os = require('os'),
         });
     });
 
+    jsonwire.post('/wd/hub/session/:sessionId/element/:id/element', function (req, res, next) {
+        var session = sessions[req.params.sessionId],
+            element_id = req.params.id;
+
+        if (!session) {
+            res.send(404);
+            return next();
+        }
+
+        if (!session.elements[element_id]) {
+            res.send(404);
+            return next();
+        }
+
+        if (JSON.parse(req.body).using != "css selector") {
+            res.contentType = "json";
+            res.send(501, { value: "Only CSS selectors are supported right now. Sorry about that." });
+            return next();
+        }
+
+        session.connection.write(JSON.stringify({
+            command: 'findElement',
+            selector: session.elements[element_id].selector.replace(/^selector_/, '') + ' ' + JSON.parse(req.body).value
+        }));
+
+        session.connection.once('data', function (message) {
+            var response_body,
+                response = JSON.parse(message);
+
+            if (response.name === "findElement") {
+                if (response.status === 0) {
+                    session.elements[response.elementId] = {
+                        id: response.elementId,
+                        selector: 'selector_' + response.selector
+                    };
+                    response_body = {
+                        "name": "findElement",
+                        "sessionId": req.params.sessionId,
+                        "status": 0,
+                        "value": {
+                            "ELEMENT": response.elementId
+                        }
+                    };
+                    res.send(200, response_body);
+                    next();
+                } else if (response.status === 7) {
+                    response_body = {
+                        "name": "findElement",
+                        "sessionId": req.params.sessionId,
+                        "status": 7,
+                        "value": {}
+                    };
+                    res.contentType = "json";
+                    res.charSet = "UTF-8";
+                    res.send(500, response_body);
+                    next();
+                }
+            }
+        });
+    });
+
     jsonwire.get('/wd/hub/session/:sessionId/element/:elementId/displayed', function (req, res, next) {
         var session = sessions[req.params.sessionId],
             element = session.elements && session.elements[req.params.elementId];
