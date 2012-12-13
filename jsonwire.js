@@ -394,6 +394,33 @@ var os = require('os'),
         return next();
     });
 
+    jsonwire.get('/wd/hub/session/:sessionId/element/:id/selected', function (req, res, next) {
+        var session = sessions[req.params.sessionId],
+            element = session.elements && session.elements[req.params.id];
+
+        if (element) {
+            session.connection.write(JSON.stringify({
+                command: 'getSelected',
+                selector: element.selector.replace(/^selector_/, '')
+            }));
+
+            session.connection.once('data', function (message) {
+                var response = JSON.parse(message);
+                if (response.name === "getSelected") {
+                    res.send(200, {
+                        "name": "getSelected",
+                        "sessionId": req.params.sessionId,
+                        "status": 0,
+                        "value": response.value
+                    });
+                }
+            });
+        } else {
+            res.send(404);
+        }
+        return next();
+    });
+
     jsonwire.post('/wd/hub/session/:sessionId/execute', function (req, res, next) {
         var session = sessions[req.params.sessionId];
         if (session) {

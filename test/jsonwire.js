@@ -56,6 +56,38 @@ describe('JSON Wire API', function(){
                 done();
             });
         });
+        it('should check if element is selected in browser', function(done){
+            var conn = new StubConnection();
+            var foo_selector = '.foo';
+            var write_spy = sinon.spy(conn, 'write');
+
+            conn.message = JSON.stringify({
+                name: 'getSelected',
+                status: 0,
+                value: true
+            });
+
+            api.sessions.aaa = {
+                connection: conn,
+                elements: {
+                    foo: {
+                        id: 12345,
+                        selector: foo_selector
+                    }
+                }
+            };
+            client.get('/wd/hub/session/aaa/element/foo/selected', function(err, req, res, obj) {
+                assert(write_spy.calledOnce);
+
+                assert(write_spy.calledWithExactly(JSON.stringify({
+                    command: "getSelected",
+                    selector: foo_selector
+                })));
+
+                assert.deepEqual(obj, { name: 'getSelected', sessionId: 'aaa', status: 0, value: true });
+                done();
+            });
+        });
         it('should findElement an return ID for element in browser', function(done){
             var conn = new StubConnection();
             conn.message = JSON.stringify({
