@@ -448,21 +448,12 @@ var os = require('os'),
         var session = sessions[req.params.sessionId];
 
         if (session) {
-            exec("powershell .\\helpers\\snap.ps1", function (error, stdout, stderr) {
+            exec("powershell .\\node_modules\\rainbowdriver\\node_modules\\rainbowdriver-server\\helpers\\snap.ps1", function (error, stdout, stderr) {
+                if (error) {
+                    console.log(error);
+                    return;
+                }
                 res.send(200, {});
-                return;
-                
-                session.connection.write(JSON.stringify({
-                    command: 'snap',
-                    edge: JSON.parse(req.body).edge
-                }));
-
-                session.connection.once('data', function (message) {
-                    var response = JSON.parse(message);
-                    if (response.name === "snap") {
-                        res.send(200, {});
-                    }
-                });
             });
 
         } else {
