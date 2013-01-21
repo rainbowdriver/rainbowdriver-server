@@ -2,7 +2,9 @@ var os = require('os'),
     restify = require('restify'),
     colorize = require('colorize'),
     cconsole = {log:function(){}},
-    exec = require('child_process').exec;
+    exec = require('child_process').exec,
+    fs = require("fs"),
+    path = require("path");
 
 (function () {
     "use strict";
@@ -445,10 +447,13 @@ var os = require('os'),
     });
 
     jsonwire.post('/wd/hub/session/:sessionId/snap', function (req, res, next) {
-        var session = sessions[req.params.sessionId];
+        var session = sessions[req.params.sessionId],
+            snapScript = path.normalize("/helpers/snap.ps1"),
+            snapPath = path.resolve(path.dirname(fs.realpathSync(__filename))),
+            snap = path.join(snapPath, snapScript);
 
         if (session) {
-            exec("powershell .\\node_modules\\rainbowdriver\\node_modules\\rainbowdriver-server\\helpers\\snap.ps1", function (error, stdout, stderr) {
+            exec("powershell " + snap, function (error, stdout, stderr) {
                 if (error) {
                     console.log(error);
                     return;
