@@ -54,7 +54,7 @@ var sockjs = require('sockjs'),
 
     Browser.prototype.connectionClosed = function(conn) {
         this.cconsole.log('#yellow[Browser ' + conn.id + ' disconnected]');
-        this.connections.splice(conn.id, 1);
+        this.connections.splice(this.connections.indexOf(conn), 1);
     };
 
     exports.Browser = Browser;

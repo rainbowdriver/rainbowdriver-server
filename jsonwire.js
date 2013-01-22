@@ -118,10 +118,11 @@ var os = require('os'),
     });
 
     jsonwire.del('/wd/hub/session/:sessionId', function (req, res, next) {
-        connections.forEach(function (conn) {
-            if(parseInt(conn.sessionId,10) === parseInt(req.params.sessionId, 10)) {
-                conn.end();
-            }
+        var session = sessions[req.params.sessionId];
+        var sameBrowserConnections = connectionsByBrowserId(session.connection.id);
+
+        sameBrowserConnections.forEach(function (conn) {
+            conn.end();
         });
         delete sessions[req.params.sessionId];
         res.send(204);
