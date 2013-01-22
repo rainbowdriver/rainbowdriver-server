@@ -177,6 +177,42 @@ var os = require('os'),
         return next();
     });
 
+    jsonwire.post('/wd/hub/session/:sessionId/window', function (req, res, next) {
+        var response,
+            session = sessions[req.params.sessionId],
+            win;
+        try {
+            win = connectionsByBrowserId(session.connection.id).filter(function (win) {
+                return win.windowName === req.params.name;
+            })[0];
+        } catch(e) { }
+
+        if(session && win) {
+            session.connection = win;
+            response = {
+                sessionId: session.id,
+                status: 0,
+                value: ""
+            };
+            res.send(200, response);
+        } else {
+            var status = 6,
+                statusText = "NoSuchDriver";
+            if (session && !win) {
+                status = 23;
+                statusText = "NoSuchWindow";
+            }
+            response = {
+                sessionId: session.sessionId,
+                status: status,
+                message: statusText
+            };
+            res.send(500, response);
+        }
+
+        return next();
+    });
+
     jsonwire.post('/wd/hub/session/:sessionId/url', function (req, res, next) {
         res.send(200, {
             "name": "get",
