@@ -63,6 +63,32 @@ describe('JSON Wire API', function(){
         });
     });
 
+    describe('/wd/hub/session/:sessionId/window_handles', function(){
+        it('respond with a list of current windows', function(done){
+            var expected = {
+                    sessionId: "mysession",
+                    status: 0,
+                    value: ["FooWindow","BarWindow"]
+                };
+            var conn1 = new StubConnection();
+            var conn2 = new StubConnection();
+            conn1.id = "handles";
+            conn1.windowName = "FooWindow";
+            conn2.id = "handles";
+            conn2.windowName = "BarWindow";
+            api.sessions.mysession = {
+                id: "mysession",
+                connection: conn1
+            };
+            api.setConnections([conn1,conn2]);
+
+            client.get('/wd/hub/session/mysession/window_handles', function(err, req, res, obj) {
+                assert.deepEqual(obj, expected);
+                done();
+            });
+        });
+    });
+
     describe('/wd/hub/session/:sessionId/element', function(){
         it('404 when session dont\'t exist', function(done){
             client.post('/wd/hub/session/666/element', {}, function(err, req, res, obj) {

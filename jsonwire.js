@@ -24,6 +24,33 @@ var os = require('os'),
 
     exports.jsonwire = jsonwire;
 
+    function connectionsByBrowserId(id) {
+        return connections.filter(function (conn) {
+            return conn.id === id;
+        });
+    }
+
+    function getAvailableBrowser() {
+        var currentWindows,
+            available = false;
+        
+        connections.forEach(function (conn) {
+            var hasSession = false;
+            if(!conn.sessionId) {
+                currentWindows = connectionsByBrowserId(conn.id);
+                currentWindows.forEach(function (win) {
+                    if (win.sessionId) {
+                        hasSession = true;
+                    }
+                });
+            }
+            if(!hasSession) {
+                available = currentWindows[0];
+            }
+        });
+        return available;
+    }
+
     jsonwire.use(restify.bodyParser());
 
     jsonwire.use(function wireLogger(req, res, next) {
@@ -65,17 +92,16 @@ var os = require('os'),
         sessions[session.id] = session;
 
         interval = setInterval(function waitingForBrowser () {
-            connections.forEach(function (conn) {
-                if(!conn.sessionId) {
-                    clearInterval(interval);
-                    conn.sessionId = session.id;
-                    session.connection = conn;
-                    res.header('Location', "/wd/hub/session/" + session.id);
-                    res.send(303);
-                    next();
-                }
-            });
-        }, 2000);
+            var browser = getAvailableBrowser();
+            if(browser) {
+                clearInterval(interval);
+                browser.sessionId = session.id;
+                session.connection = browser;
+                res.header('Location', "/wd/hub/session/" + session.id);
+                res.send(303);
+                next();
+            }
+        }, 500);
     });
 
     jsonwire.get('/wd/hub/session/:sessionId', function (req, res, next) {
@@ -115,6 +141,29 @@ var os = require('os'),
                 sessionId: session.id,
                 status: 0,
                 value: session.connection.windowName
+            };
+            res.send(200, response);
+        } else {
+            response = {
+                sessionId: session.sessionId,
+                status: 6
+            };
+            res.send(500, response);
+        }
+
+        return next();
+    });
+
+    jsonwire.get('/wd/hub/session/:sessionId/window_handles', function (req, res, next) {
+        var response,
+            session = sessions[req.params.sessionId];
+        if(session) {
+            response = {
+                sessionId: session.id,
+                status: 0,
+                value: connectionsByBrowserId(session.connection.id).map(function (conn) {
+                    return conn.windowName;
+                })
             };
             res.send(200, response);
         } else {

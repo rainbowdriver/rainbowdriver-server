@@ -40,6 +40,8 @@ var sockjs = require('sockjs'),
         if (msgObj && msgObj.status === "ready" && msgObj.windowName) {
             conn.windowName = msgObj.windowName;
             conn.id = msgObj.id;
+            conn.windowLoc = msgObj.windowLoc;
+            conn.windowType = msgObj.windowType;
             this.cconsole.log('#yellow[Browser ' + conn.id + ' connected]');
             this.connections.push(conn);
         }
