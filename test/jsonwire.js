@@ -42,6 +42,27 @@ describe('JSON Wire API', function(){
         });
     });
 
+    describe('/wd/hub/session/:sessionId/window_handle', function(){
+        it('respond with current window name', function(done){
+            var expected = {
+                    sessionId: "mysession",
+                    status: 0,
+                    value: "FooWindow"
+                };
+            var conn = new StubConnection();
+            conn.windowName = "FooWindow";
+            api.sessions.mysession = {
+                id: "mysession",
+                connection: conn
+            };
+
+            client.get('/wd/hub/session/mysession/window_handle', function(err, req, res, obj) {
+                assert.deepEqual(obj, expected);
+                done();
+            });
+        });
+    });
+
     describe('/wd/hub/session/:sessionId/element', function(){
         it('404 when session dont\'t exist', function(done){
             client.post('/wd/hub/session/666/element', {}, function(err, req, res, obj) {
@@ -137,9 +158,9 @@ describe('JSON Wire API', function(){
                 })));
 
                 assert.deepEqual(api.sessions.aaa.elements.sub_foo, { id: sub_foo_id, selector: 'selector_' + composed_selector });
-                
+
                 assert.deepEqual(obj, { name: 'findElement', sessionId: 'aaa', status: 0, value: {"ELEMENT": sub_foo_id} });
-                
+
                 conn.write.restore();
                 done();
             });
@@ -175,7 +196,7 @@ util.inherits(StubConnection, events.EventEmitter);
 StubConnection.prototype.close = sinon.stub();
 StubConnection.prototype.write = function() {
     var that = this;
-    process.nextTick(function(){ // necessary in case of write being called befor event binding
+    process.nextTick(function(){ // necessary in case of write being called before event binding
         that.emit('data', that.message);
     });
 };
