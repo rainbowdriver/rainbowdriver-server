@@ -1,5 +1,8 @@
 var sockjs = require('sockjs'),
-    colorize = require('colorize');
+    colorize = require('colorize'),
+    path = require('path'),
+    fs = require('fs'),
+    exec = require('child_process').exec;
 
 (function () {
     var timeoutValue = 10*60*1000;
@@ -44,6 +47,13 @@ var sockjs = require('sockjs'),
             conn.windowType = msgObj.windowType;
             this.cconsole.log('#yellow[Browser ' + conn.id + ' connected]');
             this.connections.push(conn);
+            if(conn.backgroundSupported) {
+                script = path.normalize("/helpers/enter.ps1"),
+                spath = path.resolve(path.dirname(fs.realpathSync(__filename))),
+                enter = path.join(spath, script);
+                this.cconsole.log('#cyan[execute now]');
+                exec("powershell.exe " + enter);
+            }
         }
 
         if(conn.id) {
