@@ -5,7 +5,7 @@ $dir = Split-Path $scriptpath
 
 Write-Host "MoveMouseToPositionOnVirtualDesktop"
 $mouse = new-object WindowsInput.MouseSimulator
-$mouse.MoveMouseToPositionOnVirtualDesktop(100,100)
+$mouse.MoveMouseToPositionOnVirtualDesktop(200,200)
 $mouse.LeftButtonDown()
 $mouse.LeftButtonUp()
 Write-Host "RETURN"
