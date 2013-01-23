@@ -45,13 +45,13 @@ var sockjs = require('sockjs'),
             conn.id = msgObj.id;
             conn.windowLoc = msgObj.windowLoc;
             conn.windowType = msgObj.windowType;
+            conn.backgroundSupported = msgObj.backgroundSupported;
             this.cconsole.log('#yellow[Browser ' + conn.id + ' connected]');
             this.connections.push(conn);
-            if(conn.backgroundSupported) {
+            if(msgObj.backgroundSupported) {
                 script = path.normalize("/helpers/enter.ps1"),
                 spath = path.resolve(path.dirname(fs.realpathSync(__filename))),
                 enter = path.join(spath, script);
-                this.cconsole.log('#cyan[execute now]');
                 exec("powershell.exe " + enter);
             }
         }
