@@ -65,7 +65,11 @@ function runChild(command, args, callback) {
             this.cconsole.log('#yellow[Browser ' + conn.id + ' connected]');
             this.connections.push(conn);
             if(msgObj.backgroundSupported) {
+                this.cconsole.log('#yellow[Trying to close background modal dialog]');
                 runChild("powershell.exe", [__dirname + '\\helpers\\enter.ps1']);
+                conn.write(JSON.stringify({
+                    internalCommand: 'resetBackgroundSupported'
+                }));
             }
         }
 
