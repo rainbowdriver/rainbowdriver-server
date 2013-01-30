@@ -47,7 +47,6 @@ function runChild(command, args, callback) {
                 clearTimeout(conn.timer);
             }
             conn.timer = setTimeout(function() {
-                that.connections.splice(that.connections.indexOf(conn),1);
                 conn.close();
             }, timeoutValue + 100);
         }
