@@ -140,6 +140,82 @@ var os = require('os'),
         return next();
     });
 
+    jsonwire.post('/wd/hub/session/:sessionId/moveto', function (req, res, next) {
+        var response,
+            session = sessions[req.params.sessionId],
+            json = JSON.parse(req.body),
+            target = json.element;
+
+        if(session) {
+            if(target && target in session.elements) {
+                session.mouse = {
+                    element: target
+                };
+                if(json.xoffset) {
+                    session.mouse.xoffset = json.xoffset;
+                }
+                if(json.yoffset) {
+                    session.mouse.yoffset = json.yoffset;
+                }
+                response = {
+                    sessionId: session.id,
+                    status: 0
+                };
+                res.send(200, response);
+            } else {
+                res.send(500, {status: 7, sessionId: session.sessionId});
+            }
+        } else {
+            response = {
+                sessionId: session.sessionId,
+                status: 6
+            };
+            res.send(500, response);
+        }
+
+        return next();
+    });
+
+    function sendClick(session, element, button, xoffset, yoffset) {
+        session.connection.write(JSON.stringify({
+            command: 'click',
+            selector: element.selector.replace(/^selector_/, ''),
+            button: button || 0,
+            xoffset: xoffset,
+            yoffset: yoffset
+        }));
+    }
+
+    jsonwire.post('/wd/hub/session/:sessionId/click', function (req, res, next) {
+        var response,
+            session = sessions[req.params.sessionId],
+            target = session.mouse && session.mouse.element,
+            button = req.body && JSON.parse(req.body).button || 0,
+            element;
+
+        if(session) {
+            if(target && target in session.elements) {
+                element = session.elements[target];
+                sendClick(session, element, button, session.mouse.xoffset, session.mouse.yoffset);
+                response = {
+                    sessionId: session.id,
+                    status: 0
+                };
+                res.send(200, response);
+            } else {
+                res.send(500, {status: 7, sessionId: session.sessionId});
+            }
+        } else {
+            response = {
+                sessionId: session.sessionId,
+                status: 6
+            };
+            res.send(500, response);
+        }
+
+        return next();
+    });
+
     jsonwire.get('/wd/hub/session/:sessionId/window_handle', function (req, res, next) {
         var response,
             session = sessions[req.params.sessionId];
@@ -437,10 +513,7 @@ var os = require('os'),
             element = session.elements && session.elements[req.params.id];
 
         if (element) {
-            session.connection.write(JSON.stringify({
-                command: 'click',
-                selector: element.selector.replace(/^selector_/, '')
-            }));
+            sendClick(session, element);
             setTimeout(function() {
                 res.send(200, {
                     "name": "clickElement",
