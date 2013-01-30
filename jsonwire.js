@@ -61,9 +61,15 @@ var os = require('os'),
         return next();
     });
 
-    jsonwire.on('NotFound', function (req, res, next) {
-        cconsole.log('#red[ Command Not Implemented ]');
+    jsonwire.on('NotFound', function (req, res) {
         cconsole.log('#green[ > ' + req.method + ' ] #cyan[' + req.path + ']');
+        if ('body' in req && req.body) {
+            cconsole.log('\t' + req.body);
+        }
+        res.send(405, {status:9, message: "UnknownCommand" });
+        // this is the last call on the chain. No next, so jsonwire.on('after') won't fire
+        cconsole.log('#green[ < ' + res.statusCode + ' ] #cyan[' + req.path + '] #red[ Command Not Implemented ]');
+        cconsole.log('\t' + res._body);
     });
 
     jsonwire.get('/wd/hub/status', function (req, res, next) {
