@@ -80,6 +80,7 @@ describe('Browser', function(){
             conn.emit('data', {});
             clock.tick(10*60*1001);
 
+            assert(browser.connections.length === 1, 'should not decrement the connections array. this is done in connectionClosed');
             assert(browser.connectionClosed.calledOnce);
         });
 
