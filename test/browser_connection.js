@@ -80,7 +80,6 @@ describe('Browser', function(){
             conn.emit('data', {});
             clock.tick(10*60*1001);
 
-            assert(browser.connections.length === 0);
             assert(browser.connectionClosed.calledOnce);
         });
 
