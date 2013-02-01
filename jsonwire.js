@@ -582,6 +582,32 @@ var os = require('os'),
         return next();
     });
 
+    jsonwire.post('/wd/hub/session/:sessionId/element/:id/clear', function (req, res, next) {
+        var session = sessions[req.params.sessionId],
+            element = session.elements && session.elements[req.params.id];
+
+        if (element) {
+            session.connection.write(JSON.stringify({
+                command: 'clear',
+                selector: element.selector.replace(/^selector_/, '')
+            }));
+
+            session.connection.once('data', function (message) {
+                var response = JSON.parse(message);
+                if (response.name === "clear") {
+                    res.send(200, {
+                        "name": "clear",
+                        "sessionId": req.params.sessionId,
+                        "status": 0,
+                    });
+                }
+            });
+        } else {
+            res.send(404);
+        }
+        return next();
+    });
+
     jsonwire.get('/wd/hub/session/:sessionId/element/:id/selected', function (req, res, next) {
         var session = sessions[req.params.sessionId],
             element = session.elements && session.elements[req.params.id];

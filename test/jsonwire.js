@@ -135,6 +135,29 @@ describe('JSON Wire API', function(){
                 done();
             });
         });
+        it('should clear the element', function(done){
+            var conn = new StubConnection(),
+                elementId = "foo";
+
+            conn.message = JSON.stringify({
+                name: 'clear',
+                status: 0,
+                elementId: elementId
+            });
+            api.sessions.aaa = {
+                connection: conn,
+                elements: {
+                    foo: {
+                        id: 12345,
+                        selector: "body"
+                    }
+                }
+            };
+            client.post('/wd/hub/session/aaa/element/' + elementId + '/clear', { using: "css selector"}, function(err, req, res, obj) {
+                assert.deepEqual(obj, { name: 'clear', sessionId: 'aaa', status: 0 });
+                done();
+            });
+        });
         it('should findElement an return ID for element in browser', function(done){
             var conn = new StubConnection();
             conn.message = JSON.stringify({
