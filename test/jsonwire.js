@@ -42,6 +42,39 @@ describe('JSON Wire API', function(){
         });
     });
 
+    describe('/wd/hub/session', function(){
+        it('should create a session when invoked with POST', function(done){
+            var session = {
+                'desiredCapabilities': {
+                    'browser' : 'mockedBrowser'
+                }
+            };
+
+            var conn1 = new StubConnection();
+            conn1.id = "handles";
+            conn1.windowName = "FooWindow";
+            api.sessions.mysession = {
+                id: "mysession",
+                connection: conn1
+            };
+            api.setConnections([conn1]);
+
+            var expected = {
+                sessionId: 123
+            };
+
+            var clock = sinon.useFakeTimers(new Date().getTime(), "Date");
+            var fakeNow = new Date().getTime();
+
+            client.post('/wd/hub/session', session, function(err, req, res, obj) {
+                clock.restore();
+                assert.equal(res.headers.location, "/wd/hub/session/" + fakeNow);
+                assert.equal(res.statusCode, 303);
+                done();
+            });
+        });
+    });
+
     describe('/wd/hub/session/:sessionId/window_handle', function(){
         it('respond with current window name', function(done){
             var expected = {
