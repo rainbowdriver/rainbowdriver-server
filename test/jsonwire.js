@@ -59,10 +59,6 @@ describe('JSON Wire API', function(){
             };
             api.setConnections([conn1]);
 
-            var expected = {
-                sessionId: 123
-            };
-
             var clock = sinon.useFakeTimers(new Date().getTime(), "Date");
             var fakeNow = new Date().getTime();
 
