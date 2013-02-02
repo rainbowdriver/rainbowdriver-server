@@ -69,6 +69,8 @@ describe('JSON Wire API', function(){
                 done();
             });
         });
+        it('should return the session information when invoked with GET');
+        it('should delete a session when invoked with DELETE');
     });
 
     describe('/wd/hub/session/:sessionId/window_handle', function(){
