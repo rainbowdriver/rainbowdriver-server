@@ -33,7 +33,7 @@ var os = require('os'),
     function getAvailableBrowser() {
         var currentWindows,
             available = false;
-        
+
         connections.forEach(function (conn) {
             var hasSession = false;
             if(!conn.sessionId) {

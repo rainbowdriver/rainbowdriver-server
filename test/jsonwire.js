@@ -139,7 +139,7 @@ describe('JSON Wire API', function(){
             var foo_selector = '.foo';
             var write_spy = sinon.spy(conn, 'write');
 
-            conn.message = JSON.stringify({
+            conn.respondWithMock = JSON.stringify({
                 name: 'getSelected',
                 status: 0,
                 value: true
@@ -170,7 +170,7 @@ describe('JSON Wire API', function(){
             var conn = new StubConnection(),
                 elementId = "foo";
 
-            conn.message = JSON.stringify({
+            conn.respondWithMock = JSON.stringify({
                 name: 'clear',
                 status: 0,
                 elementId: elementId
@@ -191,7 +191,7 @@ describe('JSON Wire API', function(){
         });
         it('should findElement an return ID for element in browser', function(done){
             var conn = new StubConnection();
-            conn.message = JSON.stringify({
+            conn.respondWithMock = JSON.stringify({
                 name: 'findElement',
                 status: 0,
                 elementId: 'foo'
@@ -212,7 +212,7 @@ describe('JSON Wire API', function(){
             var sub_foo_id = 'sub_foo';
             var write_spy = sinon.spy(conn, 'write');
 
-            conn.message = JSON.stringify({
+            conn.respondWithMock = JSON.stringify({
                 name: 'findElement',
                 status: 0,
                 elementId: 'sub_foo',
@@ -247,7 +247,7 @@ describe('JSON Wire API', function(){
         });
         it('proper response when element don\'t exist', function(done){
             var conn = new StubConnection();
-            conn.message = JSON.stringify({
+            conn.respondWithMock = JSON.stringify({
                 name: 'findElement',
                 status: 7
             });
@@ -277,7 +277,7 @@ StubConnection.prototype.close = sinon.stub();
 StubConnection.prototype.write = function() {
     var that = this;
     process.nextTick(function(){ // necessary in case of write being called before event binding
-        that.emit('data', that.message);
+        that.emit('data', that.respondWithMock);
     });
 };
 
