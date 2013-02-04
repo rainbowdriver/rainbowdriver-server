@@ -31,11 +31,12 @@ var os = require('os'),
     }
 
     function getAvailableBrowser() {
-        var currentWindows,
-            available = false;
+        var available = false;
 
         connections.forEach(function (conn) {
-            var hasSession = false;
+            var hasSession = false,
+                currentWindows = [];
+
             if(!conn.sessionId) {
                 currentWindows = connectionsByBrowserId(conn.id);
                 currentWindows.forEach(function (win) {
@@ -43,11 +44,13 @@ var os = require('os'),
                         hasSession = true;
                     }
                 });
+                if(!hasSession) {
+                    available = conn;
+                }
             }
-            if(!hasSession) {
-                available = currentWindows[0];
-            }
+
         });
+
         return available;
     }
 
