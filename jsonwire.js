@@ -682,6 +682,27 @@ var os = require('os'),
         return next();
     });
 
+    jsonwire.post('/wd/hub/session/:sessionId/low_level_keyb', function (req, res, next) {
+        var session = sessions[req.params.sessionId],
+            commandScript = path.normalize("/helpers/"+JSON.parse(req.body).command+".ps1"),
+            commandPath = path.resolve(path.dirname(fs.realpathSync(__filename))),
+            command = path.join(commandPath, commandScript);
+
+        if (session) {
+            exec("powershell " + command, function (error, stdout, stderr) {
+                if (error) {
+                    console.log(error);
+                    return;
+                }
+                res.send(200, {});
+            });
+
+        } else {
+            res.send(404);
+        }
+        return next();
+    });
+
     jsonwire.get('/wd/hub/session/:sessionId/element/:id/attribute/:name', function (req, res, next) {
         var session = sessions[req.params.sessionId],
             element = session.elements && session.elements[req.params.id];
