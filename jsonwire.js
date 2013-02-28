@@ -661,30 +661,9 @@ var os = require('os'),
         return next();
     });
 
-    jsonwire.post('/wd/hub/session/:sessionId/snap', function (req, res, next) {
-        var session = sessions[req.params.sessionId],
-            snapScript = path.normalize("/helpers/snap.ps1"),
-            snapPath = path.resolve(path.dirname(fs.realpathSync(__filename))),
-            snap = path.join(snapPath, snapScript);
-
-        if (session) {
-            exec("powershell " + snap, function (error, stdout, stderr) {
-                if (error) {
-                    console.log(error);
-                    return;
-                }
-                res.send(200, {});
-            });
-
-        } else {
-            res.send(404);
-        }
-        return next();
-    });
-
     jsonwire.post('/wd/hub/session/:sessionId/low_level_keyb', function (req, res, next) {
         var session = sessions[req.params.sessionId],
-            commandScript = path.normalize("/helpers/"+JSON.parse(req.body).command+".ps1"),
+            commandScript = path.normalize("/helpers/low_level_keyb.ps1 " + JSON.parse(req.body).command),
             commandPath = path.resolve(path.dirname(fs.realpathSync(__filename))),
             command = path.join(commandPath, commandScript);
 
