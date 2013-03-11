@@ -517,14 +517,15 @@ var os = require('os'),
 
         if (element) {
             sendClick(session, element);
-            setTimeout(function() {
-                res.send(200, {
-                    "name": "clickElement",
-                    "sessionId": req.params.sessionId,
-                    "status": 0,
-                    "value": "ok"
-                });
-            }, 1000);
+            session.connection.once('data', function (message) {
+                var response = JSON.parse(message);
+                if (response.name === "clickElement") {
+                    response.sessionId = req.params.sessionId;
+                    res.send(200, response);
+                } else {
+                    res.send(500);
+                }
+            });
         } else {
             res.send(404);
         }
@@ -649,10 +650,7 @@ var os = require('os'),
             session.connection.once('data', function (message) {
                 var response = JSON.parse(message);
                 if (response.name === "executeScript") {
-                    var response_body = {
-                        "value": response.value
-                    };
-                    res.send(200,response_body);
+                    res.send(200,response);
                 }
             });
         } else {
