@@ -15,10 +15,8 @@ function StubConnection(attrs) {
 
 util.inherits(StubConnection, events.EventEmitter);
 
-StubConnection.prototype.close = function () {
-    this.emit('close');
-};
-
+StubConnection.prototype.write = sinon.stub();
+StubConnection.prototype.close = sinon.stub();
 
 describe('Browser', function(){
 
@@ -70,6 +68,33 @@ describe('Browser', function(){
                 endTest();
             });
             browser.connection = fakeConn;
+        });
+    });
+
+    describe('_sendCommand sending messages', function() {
+        var browser = null;
+
+        beforeEach(function() {
+            var fakeConn = new StubConnection();
+            browser = new Browser();
+            browser.connection = fakeConn;
+        });
+        afterEach(function() {
+            browser = null;
+        });
+
+        it('should pass a json encoded string to the connection', function() {
+            browser._sendCommand('getElement', { foo: 'bar' });
+            assert.deepEqual(JSON.parse(browser.connection.write.firstCall.args), { foo: 'bar', command: 'getElement' });
+            browser.connection.write.reset();
+        });
+
+        it('fallback to "log" if no command provided', function () {
+            browser._sendCommand({ foo: 'bar' });
+            browser._sendCommand(null ,{ bar: 'foo' });
+            assert.deepEqual(JSON.parse(browser.connection.write.firstCall.args), { foo: 'bar', command: 'log' });
+            assert.deepEqual(JSON.parse(browser.connection.write.secondCall.args), { bar: 'foo', command: 'log' });
+            browser.connection.write.reset();
         });
     });
 

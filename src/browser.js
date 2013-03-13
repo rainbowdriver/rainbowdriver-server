@@ -12,7 +12,11 @@ util.inherits(Browser, events.EventEmitter);
 module.exports = Browser;
 
 function _getConnection() {
-    return this._connection;
+    if(this._connection) {
+        return this._connection;
+    } else {
+        throw "No connection available";
+    }
 }
 
 function _setConnection(connection) {
@@ -28,4 +32,13 @@ Object.defineProperty(Browser.prototype, 'connection', {
     get: _getConnection,
     set: _setConnection
 });
+
+Browser.prototype._sendCommand = function(command, data) {
+    if(!data && command) {
+        data = command;
+        command = null;
+    }
+    data.command = command || 'log';
+    this._connection.write(JSON.stringify(data));
+};
 
