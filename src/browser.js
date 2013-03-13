@@ -24,6 +24,7 @@ function _setConnection(connection) {
     if (this._connection) {
         throw "Could not override connection";
     } else {
+        connection.on('close', this._invalidateConnection.bind(this));
         this._connection = connection;
         this.emit('connected');
     }
@@ -33,6 +34,13 @@ Object.defineProperty(Browser.prototype, 'connection', {
     get: _getConnection,
     set: _setConnection
 });
+
+Browser.prototype._invalidateConnection = function() {
+    this._connection.removeAllListeners();
+    this._connection = {
+        broken : true
+    };
+};
 
 Browser.prototype._sendCommand = function(command, data) {
     if(!data && command) {
@@ -44,6 +52,7 @@ Browser.prototype._sendCommand = function(command, data) {
     // timeout logic
     var that = this;
     this.timeouts[command] = setTimeout(function() {
+        that._connection.close();
         that.emit(command, {error: 'timeout'});
     }, 30000);
     this.once(command, function() {

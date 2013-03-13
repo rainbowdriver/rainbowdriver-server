@@ -16,7 +16,9 @@ function StubConnection(attrs) {
 util.inherits(StubConnection, events.EventEmitter);
 
 StubConnection.prototype.write = sinon.stub();
-StubConnection.prototype.close = sinon.stub();
+StubConnection.prototype.close = function() {
+    this.emit('close');
+};
 
 describe('Browser', function(){
 
@@ -69,6 +71,38 @@ describe('Browser', function(){
             });
             browser.connection = fakeConn;
         });
+        it('should bind close event to _invalidateConnection', function () {
+            var browser = Browser(),
+                fakeConn = new StubConnection();
+
+            sinon.stub(browser, '_invalidateConnection');
+            browser.connection = fakeConn;
+            fakeConn.emit('close');
+            assert(browser._invalidateConnection.calledOnce, '_invalidateConnection not called');
+        });
+    });
+
+    describe('_invalidateConnection', function() {
+        it('should remove all listeners from connection', function() {
+            var browser = Browser(),
+                fakeConn = new StubConnection(),
+                listener = sinon.stub();
+
+            browser.connection = fakeConn;
+            browser.connection.on('data', listener);
+            browser._invalidateConnection();
+            fakeConn.emit('data', {foo:'bar'});
+            assert(listener.notCalled, 'listener called');
+        });
+        it('should replace connection with error object', function() {
+            var browser = Browser(),
+                fakeConn = new StubConnection();
+
+            browser.connection = fakeConn;
+            browser._invalidateConnection();
+            assert.notEqual(browser.connection, fakeConn);
+            assert.equal(browser.connection.broken, true);
+        });
     });
 
     describe('_sendCommand sending messages', function() {
@@ -96,9 +130,13 @@ describe('Browser', function(){
             browser.connection.write.reset();
         });
 
-        it('should emmit error after 30 seconds timeout and close connection', function(endTest) {
+        it('should emmit error after 30 seconds timeout invalidate and close connection', function(endTest) {
             var clock = sinon.useFakeTimers();
+            browser = new Browser();
+            sinon.stub(browser, '_invalidateConnection');
+            browser.connection = new StubConnection();
             browser.once('getElement', function(message) {
+                assert(browser._invalidateConnection.calledOnce, '_invalidateConnection not called');
                 assert.equal(message.error, 'timeout');
                 clock.restore();
                 endTest();
