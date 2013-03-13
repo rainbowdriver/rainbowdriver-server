@@ -75,9 +75,8 @@ describe('Browser', function(){
         var browser = null;
 
         beforeEach(function() {
-            var fakeConn = new StubConnection();
             browser = new Browser();
-            browser.connection = fakeConn;
+            browser.connection = new StubConnection();
         });
         afterEach(function() {
             browser = null;
@@ -95,6 +94,30 @@ describe('Browser', function(){
             assert.deepEqual(JSON.parse(browser.connection.write.firstCall.args), { foo: 'bar', command: 'log' });
             assert.deepEqual(JSON.parse(browser.connection.write.secondCall.args), { bar: 'foo', command: 'log' });
             browser.connection.write.reset();
+        });
+
+        it('should emmit error after 30 seconds timeout and close connection', function(endTest) {
+            var clock = sinon.useFakeTimers();
+            browser.once('getElement', function(message) {
+                assert.equal(message.error, 'timeout');
+                clock.restore();
+                endTest();
+            });
+            browser._sendCommand('getElement', { foo: 'bar' });
+            clock.tick(30000);
+        });
+
+        it('should not timeout if connection responded', function(endTest) {
+            var clock = sinon.useFakeTimers(),
+                listener = sinon.stub();
+            browser.on('getElement', listener);
+            browser._sendCommand('getElement', { foo: 'bar' });
+            clock.tick(500);
+            browser.emit('getElement', { success: true });
+            clock.tick(30000);
+            assert(listener.calledOnce, 'called ' + listener.callCount );
+            clock.restore();
+            endTest();
         });
     });
 

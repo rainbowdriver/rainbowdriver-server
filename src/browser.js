@@ -5,6 +5,7 @@ function Browser() {
     if(false === (this instanceof Browser)) {
         return new Browser();
     }
+    this.timeouts = {};
     events.EventEmitter.call(this);
 }
 util.inherits(Browser, events.EventEmitter);
@@ -39,6 +40,18 @@ Browser.prototype._sendCommand = function(command, data) {
         command = null;
     }
     data.command = command || 'log';
+
+    // timeout logic
+    var that = this;
+    this.timeouts[command] = setTimeout(function() {
+        that.emit(command, {error: 'timeout'});
+    }, 30000);
+    this.once(command, function() {
+        clearTimeout(that.timeouts[command]);
+        delete that.timeouts[command];
+    });
+
+    // send message
     this._connection.write(JSON.stringify(data));
 };
 
