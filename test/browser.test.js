@@ -46,38 +46,38 @@ describe('Browser', function(){
     describe('connection binding', function() {
         it('should save connection', function() {
             var browser = Browser(),
-                fakeConn = new StubConnection();
+                fakeConnection = new StubConnection();
 
-            browser.connection = fakeConn;
-            assert.equal(browser.connection, fakeConn);
+            browser.connection = fakeConnection;
+            assert.equal(browser.connection, fakeConnection);
         });
         it('should not accept a second connection', function() {
             var browser = Browser(),
-                fakeConn1 = new StubConnection(),
-                fakeConn2 = new StubConnection();
+                fakeConnection1 = new StubConnection(),
+                fakeConnection2 = new StubConnection();
 
-            browser.connection = fakeConn1;
+            browser.connection = fakeConnection1;
             assert.throws(function() {
-                browser.connection = fakeConn2;
+                browser.connection = fakeConnection2;
             });
-            assert.equal(browser.connection, fakeConn1);
+            assert.equal(browser.connection, fakeConnection1);
         });
         it('should emit "connected" when connection is set', function(endTest) {
             var browser = Browser(),
-                fakeConn = new StubConnection();
+                fakeConnection = new StubConnection();
 
             browser.on('connected', function() {
                 endTest();
             });
-            browser.connection = fakeConn;
+            browser.connection = fakeConnection;
         });
         it('should bind close event to _invalidateConnection', function () {
             var browser = Browser(),
-                fakeConn = new StubConnection();
+                fakeConnection = new StubConnection();
 
             sinon.stub(browser, '_invalidateConnection');
-            browser.connection = fakeConn;
-            fakeConn.emit('close');
+            browser.connection = fakeConnection;
+            fakeConnection.emit('close');
             assert(browser._invalidateConnection.calledOnce, '_invalidateConnection not called');
         });
     });
@@ -85,22 +85,22 @@ describe('Browser', function(){
     describe('_invalidateConnection', function() {
         it('should remove all listeners from connection', function() {
             var browser = Browser(),
-                fakeConn = new StubConnection(),
+                fakeConnection = new StubConnection(),
                 listener = sinon.stub();
 
-            browser.connection = fakeConn;
+            browser.connection = fakeConnection;
             browser.connection.on('data', listener);
             browser._invalidateConnection();
-            fakeConn.emit('data', {foo:'bar'});
+            fakeConnection.emit('data', {foo:'bar'});
             assert(listener.notCalled, 'listener called');
         });
         it('should replace connection with error object', function() {
             var browser = Browser(),
-                fakeConn = new StubConnection();
+                fakeConnection = new StubConnection();
 
-            browser.connection = fakeConn;
+            browser.connection = fakeConnection;
             browser._invalidateConnection();
-            assert.notEqual(browser.connection, fakeConn);
+            assert.notEqual(browser.connection, fakeConnection);
             assert.equal(browser.connection.broken, true);
         });
     });
