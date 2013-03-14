@@ -10,7 +10,7 @@ var os = require('os'),
     "use strict";
     var sessions = {},
         connections,
-        jsonwire = restify.createServer({name: 'Selenium Winjs'});
+        server = restify.createServer({name: 'Selenium Winjs'});
 
     exports.setConnections = function(newConnections) {
         connections = newConnections;
@@ -22,7 +22,7 @@ var os = require('os'),
 
     exports.sessions = sessions;
 
-    exports.jsonwire = jsonwire;
+    exports.server = server;
 
     function connectionsByBrowserId(id) {
         return connections.filter(function (conn) {
@@ -54,9 +54,9 @@ var os = require('os'),
         return available;
     }
 
-    jsonwire.use(restify.bodyParser());
+    server.use(restify.bodyParser());
 
-    jsonwire.use(function wireLogger(req, res, next) {
+    server.use(function wireLogger(req, res, next) {
         cconsole.log('#green[ > ' + req.method + ' ] #cyan[' + req.path + ']');
         if ('body' in req && req.body) {
             cconsole.log('\t' + req.body);
@@ -64,18 +64,18 @@ var os = require('os'),
         return next();
     });
 
-    jsonwire.on('NotFound', function (req, res) {
+    server.on('NotFound', function (req, res) {
         cconsole.log('#green[ > ' + req.method + ' ] #cyan[' + req.path + ']');
         if ('body' in req && req.body) {
             cconsole.log('\t' + req.body);
         }
         res.send(405, {status:9, message: "UnknownCommand" });
-        // this is the last call on the chain. No next, so jsonwire.on('after') won't fire
+        // this is the last call on the chain. No next, so server.on('after') won't fire
         cconsole.log('#green[ < ' + res.statusCode + ' ] #cyan[' + req.path + '] #red[ Command Not Implemented ]');
         cconsole.log('\t' + res._body);
     });
 
-    jsonwire.get('/wd/hub/status', function (req, res, next) {
+    server.get('/wd/hub/status', function (req, res, next) {
         res.send({
             "build" : {
                 "version" : "0.1",
@@ -91,7 +91,7 @@ var os = require('os'),
         return next();
     });
 
-    jsonwire.post('/wd/hub/session', function (req, res, next) {
+    server.post('/wd/hub/session', function (req, res, next) {
         var interval,
             session = {
                 'id' : new Date().getTime(),
@@ -113,7 +113,7 @@ var os = require('os'),
         }, 500);
     });
 
-    jsonwire.get('/wd/hub/session/:sessionId', function (req, res, next) {
+    server.get('/wd/hub/session/:sessionId', function (req, res, next) {
         var session = {
                 'sessionId' : req.params.sessionId,
                 'desiredCapabilities' : sessions[req.params.sessionId].desiredCapabilities,
@@ -126,7 +126,7 @@ var os = require('os'),
         return next();
     });
 
-    jsonwire.del('/wd/hub/session/:sessionId', function (req, res, next) {
+    server.del('/wd/hub/session/:sessionId', function (req, res, next) {
         var session = sessions[req.params.sessionId];
         var sameBrowserConnections = connectionsByBrowserId(session.connection.id);
 
@@ -138,12 +138,12 @@ var os = require('os'),
         return next();
     });
 
-    jsonwire.get('/wd/hub/sessions', function (req, res, next) {
+    server.get('/wd/hub/sessions', function (req, res, next) {
         res.send(sessions);
         return next();
     });
 
-    jsonwire.post('/wd/hub/session/:sessionId/moveto', function (req, res, next) {
+    server.post('/wd/hub/session/:sessionId/moveto', function (req, res, next) {
         var response,
             session = sessions[req.params.sessionId],
             json = JSON.parse(req.body),
@@ -189,7 +189,7 @@ var os = require('os'),
         }));
     }
 
-    jsonwire.post('/wd/hub/session/:sessionId/click', function (req, res, next) {
+    server.post('/wd/hub/session/:sessionId/click', function (req, res, next) {
         var response,
             session = sessions[req.params.sessionId],
             target = session.mouse && session.mouse.element,
@@ -219,7 +219,7 @@ var os = require('os'),
         return next();
     });
 
-    jsonwire.get('/wd/hub/session/:sessionId/window_handle', function (req, res, next) {
+    server.get('/wd/hub/session/:sessionId/window_handle', function (req, res, next) {
         var response,
             session = sessions[req.params.sessionId];
         if(session) {
@@ -240,7 +240,7 @@ var os = require('os'),
         return next();
     });
 
-    jsonwire.get('/wd/hub/session/:sessionId/window_handles', function (req, res, next) {
+    server.get('/wd/hub/session/:sessionId/window_handles', function (req, res, next) {
         var response,
             session = sessions[req.params.sessionId];
         if(session) {
@@ -263,7 +263,7 @@ var os = require('os'),
         return next();
     });
 
-    jsonwire.post('/wd/hub/session/:sessionId/window', function (req, res, next) {
+    server.post('/wd/hub/session/:sessionId/window', function (req, res, next) {
         var response,
             session = sessions[req.params.sessionId],
             win;
@@ -299,7 +299,7 @@ var os = require('os'),
         return next();
     });
 
-    jsonwire.post('/wd/hub/session/:sessionId/url', function (req, res, next) {
+    server.post('/wd/hub/session/:sessionId/url', function (req, res, next) {
         res.send(200, {
             "name": "get",
             "sessionId": req.sessionId,
@@ -309,7 +309,7 @@ var os = require('os'),
         return next();
     });
 
-    jsonwire.get('/wd/hub/session/:sessionId/title', function (req, res, next) {
+    server.get('/wd/hub/session/:sessionId/title', function (req, res, next) {
         var session = sessions[req.params.sessionId];
 
         if (session) {
@@ -332,7 +332,7 @@ var os = require('os'),
         return next();
     });
 
-    jsonwire.post('/wd/hub/session/:sessionId/element', function (req, res, next) {
+    server.post('/wd/hub/session/:sessionId/element', function (req, res, next) {
         var response,
             returned_element,
             session = sessions[req.params.sessionId];
@@ -391,7 +391,7 @@ var os = require('os'),
         });
     });
 
-    jsonwire.post('/wd/hub/session/:sessionId/element/:id/element', function (req, res, next) {
+    server.post('/wd/hub/session/:sessionId/element/:id/element', function (req, res, next) {
         var session = sessions[req.params.sessionId],
             element_id = req.params.id;
 
@@ -452,7 +452,7 @@ var os = require('os'),
         });
     });
 
-    jsonwire.get('/wd/hub/session/:sessionId/element/:elementId/displayed', function (req, res, next) {
+    server.get('/wd/hub/session/:sessionId/element/:elementId/displayed', function (req, res, next) {
         var session = sessions[req.params.sessionId],
             element = session.elements && session.elements[req.params.elementId];
 
@@ -479,7 +479,7 @@ var os = require('os'),
         });
     });
 
-    jsonwire.post('/wd/hub/session/:sessionId/element/:id/value', function (req, res, next) {
+    server.post('/wd/hub/session/:sessionId/element/:id/value', function (req, res, next) {
         var session = sessions[req.params.sessionId],
             element = session.elements && session.elements[req.params.id];
 
@@ -511,7 +511,7 @@ var os = require('os'),
         return next();
     });
 
-    jsonwire.post('/wd/hub/session/:sessionId/element/:id/click', function (req, res, next) {
+    server.post('/wd/hub/session/:sessionId/element/:id/click', function (req, res, next) {
         var session = sessions[req.params.sessionId],
             element = session.elements && session.elements[req.params.id];
 
@@ -532,7 +532,7 @@ var os = require('os'),
         return next();
     });
 
-    jsonwire.get('/wd/hub/session/:sessionId/element/:id/text', function (req, res, next) {
+    server.get('/wd/hub/session/:sessionId/element/:id/text', function (req, res, next) {
         var session = sessions[req.params.sessionId],
             element = session.elements && session.elements[req.params.id];
 
@@ -559,7 +559,7 @@ var os = require('os'),
         return next();
     });
 
-    jsonwire.get('/wd/hub/session/:sessionId/element/:id/name', function (req, res, next) {
+    server.get('/wd/hub/session/:sessionId/element/:id/name', function (req, res, next) {
         var session = sessions[req.params.sessionId],
             element = session.elements && session.elements[req.params.id];
 
@@ -586,7 +586,7 @@ var os = require('os'),
         return next();
     });
 
-    jsonwire.post('/wd/hub/session/:sessionId/element/:id/clear', function (req, res, next) {
+    server.post('/wd/hub/session/:sessionId/element/:id/clear', function (req, res, next) {
         var session = sessions[req.params.sessionId],
             element = session.elements && session.elements[req.params.id];
 
@@ -612,7 +612,7 @@ var os = require('os'),
         return next();
     });
 
-    jsonwire.get('/wd/hub/session/:sessionId/element/:id/selected', function (req, res, next) {
+    server.get('/wd/hub/session/:sessionId/element/:id/selected', function (req, res, next) {
         var session = sessions[req.params.sessionId],
             element = session.elements && session.elements[req.params.id];
 
@@ -639,7 +639,7 @@ var os = require('os'),
         return next();
     });
 
-    jsonwire.post('/wd/hub/session/:sessionId/execute', function (req, res, next) {
+    server.post('/wd/hub/session/:sessionId/execute', function (req, res, next) {
         var session = sessions[req.params.sessionId];
         if (session) {
             session.connection.write(JSON.stringify({
@@ -659,7 +659,7 @@ var os = require('os'),
         return next();
     });
 
-    jsonwire.post('/wd/hub/session/:sessionId/low_level_keyb', function (req, res, next) {
+    server.post('/wd/hub/session/:sessionId/low_level_keyb', function (req, res, next) {
         var session = sessions[req.params.sessionId],
             commandScript = path.normalize("/helpers/low_level_keyb.ps1 " + JSON.parse(req.body).command),
             commandPath = path.resolve(path.dirname(fs.realpathSync(__filename))),
@@ -680,7 +680,7 @@ var os = require('os'),
         return next();
     });
 
-    jsonwire.get('/wd/hub/session/:sessionId/element/:id/attribute/:name', function (req, res, next) {
+    server.get('/wd/hub/session/:sessionId/element/:id/attribute/:name', function (req, res, next) {
         var session = sessions[req.params.sessionId],
             element = session.elements && session.elements[req.params.id];
 
@@ -708,7 +708,7 @@ var os = require('os'),
         return next();
     });
 
-    jsonwire.on('after', function responseLogger(req, res) {
+    server.on('after', function responseLogger(req, res) {
         cconsole.log('#green[ < ' + res.statusCode + ' ] #cyan[' + req.path + ']');
         cconsole.log('\t' + res._body);
     });
