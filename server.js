@@ -6,8 +6,8 @@ var server = jsonwire.server;
 
 browser.browser_connection.installHandlers(server, {prefix: '/browser_connection'});
 
-server.setConnections(browser.connections);
-server.verbosity();
+jsonwire.setConnections(browser.connections);
+jsonwire.verbosity();
 
 server.listen(8080, function () {
     console.log('%s listening at %s', server.name, server.url);
