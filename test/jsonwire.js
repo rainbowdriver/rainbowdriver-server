@@ -7,7 +7,7 @@ var os = require('os'),
     api = require('../jsonwire'),
     client;
 
-api.jsonwire.listen(8745);
+api.server.listen(8745);
 client = restify.createJsonClient({
   url: 'http://localhost:8745/'
 });
