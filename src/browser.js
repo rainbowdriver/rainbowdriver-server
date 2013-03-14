@@ -25,6 +25,7 @@ function _setConnection(connection) {
         throw "Could not override connection";
     } else {
         connection.on('close', this._invalidateConnection.bind(this));
+        connection.on('data', this._dataReceiver.bind(this));
         this._connection = connection;
         this.emit('connected');
     }
@@ -62,5 +63,19 @@ Browser.prototype._sendCommand = function(command, data) {
 
     // send message
     this._connection.write(JSON.stringify(data));
+};
+
+Browser.prototype._dataReceiver =  function(dataStr) {
+    var data;
+    try {
+        data = JSON.parse(dataStr);
+    } catch (e) {
+        data = {
+            error: "Invalid JSON received.",
+            message: e.message,
+            originalData: dataStr
+        };
+    }
+    this.emit(data.command || 'log', data);
 };
 

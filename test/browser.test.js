@@ -159,4 +159,48 @@ describe('Browser', function(){
         });
     });
 
+    describe('raceiving data', function() {
+        var browser = null,
+            fakeConnection =  null;
+
+        beforeEach(function() {
+            browser = new Browser();
+            fakeConnection = new StubConnection();
+            browser.connection = fakeConnection;
+        });
+        afterEach(function() {
+            browser = null;
+            fakeConnection = null;
+        });
+
+        it('should emit event with the command name and details', function(endTest) {
+            browser.on('someCommand', function(details) {
+                assert.equal(details.foo, 'bar');
+                endTest();
+            });
+            fakeConnection.emit('data', JSON.stringify({
+                command: 'someCommand',
+                foo: 'bar'
+            }));
+        });
+        it('should default to log when no command is sent', function(endTest) {
+            browser.on('log', function(details) {
+                assert.equal(details.foo, 'bar');
+                endTest();
+            });
+            fakeConnection.emit('data', JSON.stringify({
+                foo: 'bar'
+            }));
+        });
+        it('should log when no valid json is received', function(endTest) {
+            browser.on('log', function(details) {
+                assert.equal(details.error, "Invalid JSON received.");
+                assert.equal(typeof details.message, 'string');
+                assert.equal(details.originalData, 'no json message');
+                endTest();
+            });
+            fakeConnection.emit('data', "no json message");
+        });
+    });
+
 });
