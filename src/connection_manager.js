@@ -6,18 +6,18 @@ var sockjs   = require('sockjs'),
 socket_server = sockjs.createServer();
 socket_server.on('connection', function(connection) {
     console.log('--- browser connected');
+    var browser = new Browser();
+    browser.connection = connection;
     listener = waitingListeners.shift();
     if(listener) {
-        respondWithBrowser(connection, listener);
+        respondWithBrowser(browser, listener);
     } else {
-        waitingConnections.push(connection);
+        waitingConnections.push(browser);
     }
 });
 
-function respondWithBrowser(connection, listener) {
+function respondWithBrowser(browser, listener) {
     console.log('--- binded connections');
-    var browser = new Browser();
-    browser.connection = connection;
     listener(browser);
 }
 
