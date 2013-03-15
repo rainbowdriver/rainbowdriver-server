@@ -6,7 +6,7 @@ function log(browser, inOut, message) {
     if(!browser.verbose) {
         return;
     }
-    colorize.console.log('#yellow[ ' + (inOut? '>>>': '<<<') + ' ] browser ' + (browser && browser.id ? browser.id:''));
+    colorize.console.log('#yellow[' + (inOut? '>>>': '<<<') + '] browser ' + (browser && browser.id ? browser.id:''));
     console.log('\t' + JSON.stringify(message));
 }
 
@@ -101,3 +101,6 @@ Browser.prototype._browserData = function (data) {
     });
 };
 
+Browser.prototype.close = function () {
+    this._connection.end();
+};

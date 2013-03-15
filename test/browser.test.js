@@ -19,6 +19,7 @@ StubConnection.prototype.write = sinon.stub();
 StubConnection.prototype.close = function() {
     this.emit('close');
 };
+StubConnection.prototype.end = StubConnection.prototype.close;
 
 describe('Browser', function(){
 
@@ -243,6 +244,27 @@ describe('Browser', function(){
             assert.equal(browser.windowType, data.windowType);
             assert.equal(browser.backgroundSupported, data.backgroundSupported);
             assert.equal(browser.id, data.id);
+        });
+    });
+
+    describe('close', function() {
+        var browser = null,
+            fakeConnection =  null;
+
+        beforeEach(function() {
+            browser = new Browser();
+            fakeConnection = new StubConnection();
+            browser.connection = fakeConnection;
+        });
+        afterEach(function() {
+            browser = null;
+            fakeConnection = null;
+        });
+        it('should end connection when closing browser', function () {
+            var stub = sinon.stub();
+            fakeConnection.on('close', stub);
+            browser.close();
+            assert(stub.calledOnce);
         });
     });
 
