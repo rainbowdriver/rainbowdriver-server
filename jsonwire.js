@@ -9,20 +9,22 @@ var os = require('os'),
 (function () {
     "use strict";
     var sessions = {},
-        connections,
+        connections, jsonwire,
         server = restify.createServer({name: 'Selenium Winjs'});
 
-    exports.setConnections = function(newConnections) {
-        connections = newConnections;
+    jsonwire = {
+        setConnections: function(newConnections) {
+            connections = newConnections;
+        },
+        verbosity: function() {
+            cconsole = colorize.console;
+        },
+        sessions: sessions,
+        server: server,
+        browser_manager: null
     };
 
-    exports.verbosity = function() {
-        cconsole = colorize.console;
-    };
-
-    exports.sessions = sessions;
-
-    exports.server = server;
+    module.exports = jsonwire;
 
     function connectionsByBrowserId(id) {
         return connections.filter(function (conn) {
@@ -100,17 +102,14 @@ var os = require('os'),
 
         sessions[session.id] = session;
 
-        interval = setInterval(function waitingForBrowser () {
-            var browser = getAvailableBrowser();
-            if(browser) {
-                clearInterval(interval);
+        jsonwire.browser_manager.getBrowser(function(browser) {
                 browser.sessionId = session.id;
-                session.connection = browser;
+                session.browser = browser;
+                session.connection = browser.connection; // todo: remove that, just retrocompatibility
                 res.header('Location', "/wd/hub/session/" + session.id);
                 res.send(303);
                 next();
-            }
-        }, 500);
+        });
     });
 
     server.get('/wd/hub/session/:sessionId', function (req, res, next) {

@@ -1,13 +1,12 @@
 
 var jsonwire = require('./jsonwire');
-var browser = new (require('./browser_connection').Browser)(true);
 var server = jsonwire.server;
+var browser_manager = require('./src/connection_manager');
 
+jsonwire.browser_manager = browser_manager;
+jsonwire.verbosity();
 
-browser.browser_connection.installHandlers(server, {prefix: '/browser_connection'});
-
-server.setConnections(browser.connections);
-server.verbosity();
+browser_manager.socket_server.installHandlers(server, {prefix: '/browser_connection'});
 
 server.listen(8080, function () {
     console.log('%s listening at %s', server.name, server.url);
