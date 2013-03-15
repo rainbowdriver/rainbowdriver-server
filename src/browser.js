@@ -58,15 +58,14 @@ Browser.prototype._sendCommand = function(command, data) {
 
     // timeout logic
     var that = this;
-    this.timeouts[command] = setTimeout(function() {
+    this.timeouts[data.command] = setTimeout(function() {
         that._connection.close();
-        that.emit(command, {error: 'timeout'});
+        that.emit(data.command, {error: 'timeout'});
     }, 30000);
-    this.once(command, function() {
-        clearTimeout(that.timeouts[command]);
-        delete that.timeouts[command];
+    this.once(data.command, function() {
+        clearTimeout(that.timeouts[data.command]);
+        delete that.timeouts[data.command];
     });
-
     // send message
     log(this, false, data);
     this._connection.write(JSON.stringify(data));
