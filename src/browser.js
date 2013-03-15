@@ -1,5 +1,11 @@
 var util = require('util'),
+    colorize = require('colorize'),
     events = require('events');
+
+function log(browser, inOut, message) {
+    colorize.console.log('#yellow[ ' + (inOut? '>>>': '<<<') + ' ] browser ' + (browser && browser.id ? browser.id:''));
+    console.log('\t' + JSON.stringify(message));
+}
 
 function Browser() {
     if(false === (this instanceof Browser)) {
@@ -62,6 +68,7 @@ Browser.prototype._sendCommand = function(command, data) {
     });
 
     // send message
+    log(this, false, data);
     this._connection.write(JSON.stringify(data));
 };
 
@@ -76,6 +83,7 @@ Browser.prototype._dataReceiver =  function(dataStr) {
             originalData: dataStr
         };
     }
+    log(this, true, data);
     this.emit(data.command || 'log', data);
 };
 
