@@ -86,13 +86,16 @@ describe('Browser', function(){
         it('should remove all listeners from connection', function() {
             var browser = Browser(),
                 fakeConnection = new StubConnection(),
-                listener = sinon.stub();
+                browserListener = sinon.stub(),
+                connectionListener = sinon.stub();
 
             browser.connection = fakeConnection;
-            browser.connection.on('data', listener);
+            browser.connection.on('data', connectionListener);
+            browser.on('close', browserListener);
             browser._invalidateConnection();
             fakeConnection.emit('data', {foo:'bar'});
-            assert(listener.notCalled, 'listener called');
+            assert(connectionListener.notCalled, 'listener called');
+            assert(browserListener.calledOnce, 'browser "close" should fire');
         });
         it('should replace connection with error object', function() {
             var browser = Browser(),

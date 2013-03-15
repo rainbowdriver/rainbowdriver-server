@@ -47,6 +47,7 @@ Object.defineProperty(Browser.prototype, 'connection', {
 });
 
 Browser.prototype._invalidateConnection = function() {
+    this.emit('close');
     this._connection.removeAllListeners();
     this._connection = {
         broken : true
