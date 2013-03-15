@@ -37,6 +37,7 @@ function _setConnection(connection) {
         connection.on('data', this._dataReceiver.bind(this));
         this._connection = connection;
         this.emit('connected');
+        this.on('ready', this._browserData.bind(this));
     }
 }
 
@@ -87,5 +88,15 @@ Browser.prototype._dataReceiver =  function(dataStr) {
     }
     log(this, true, data);
     this.emit(data.command || 'log', data);
+};
+
+Browser.prototype._browserData = function (data) {
+    var that = this;
+    if(data.command) {
+        delete data.command;
+    }
+    Object.getOwnPropertyNames(data).forEach(function (key) {
+        that[key] = data[key];
+    });
 };
 

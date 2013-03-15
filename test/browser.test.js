@@ -203,4 +203,44 @@ describe('Browser', function(){
         });
     });
 
+    describe('ready event', function(){
+        var browser = null,
+            fakeConnection =  null;
+
+        beforeEach(function() {
+            browser = new Browser();
+            fakeConnection = new StubConnection();
+        });
+        afterEach(function() {
+            browser = null;
+            fakeConnection = null;
+        });
+
+        it('should fire _browserData', function() {
+            sinon.stub(browser, '_browserData');
+            browser.connection = fakeConnection;
+            browser.emit('ready');
+            assert(browser._browserData.calledOnce);
+        });
+
+        it('should save proterties when _browserData is called', function () {
+            var data = {
+                command: "ready",
+                windowName: "rings.destroyPlan",
+                windowLoc: "C:\\Users\\gandalf\\rings\\onering\\default.html",
+                windowType: "Application",
+                backgroundSupported: true,
+                id: "rings.destroyPlan_1363366682315"
+            };
+            browser.connection = fakeConnection;
+            browser.emit('ready', data);
+            assert.equal(browser.command, undefined);
+            assert.equal(browser.windowName, data.windowName);
+            assert.equal(browser.windowLoc, data.windowLoc);
+            assert.equal(browser.windowType, data.windowType);
+            assert.equal(browser.backgroundSupported, data.backgroundSupported);
+            assert.equal(browser.id, data.id);
+        });
+    });
+
 });
