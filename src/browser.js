@@ -3,6 +3,9 @@ var util = require('util'),
     events = require('events');
 
 function log(browser, inOut, message) {
+    if(!browser.verbose) {
+        return;
+    }
     colorize.console.log('#yellow[ ' + (inOut? '>>>': '<<<') + ' ] browser ' + (browser && browser.id ? browser.id:''));
     console.log('\t' + JSON.stringify(message));
 }
