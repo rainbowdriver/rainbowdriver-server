@@ -75,7 +75,7 @@ var os = require('os'),
         }
 
         jsonwire.browser_manager.getBrowser(function(browser) {
-                session.id = browser.id;
+                session.id = (new Date()).getTime();
                 session.browser = browser;
                 session.windows.push(browser);
                 browser.on('close', removeOldWindow.bind(null, browser));
@@ -621,21 +621,18 @@ var os = require('os'),
     server.post('/wd/hub/session/:sessionId/execute', function (req, res, next) {
         var session = sessions[req.params.sessionId];
         if (session) {
-            session.connection.write(JSON.stringify({
-                command: 'executeScript',
-                script: JSON.parse(req.body).script
-            }));
 
-            session.connection.once('data', function (message) {
-                var response = JSON.parse(message);
-                if (response.name === "executeScript") {
-                    res.send(200,response);
-                }
+            session.browser.executeScript({
+                script: JSON.parse(req.body).script
+            }, function(result) {
+                res.send(200, result);
+                return next();
             });
+
         } else {
             res.send(404);
+            return next();
         }
-        return next();
     });
 
     server.post('/wd/hub/session/:sessionId/low_level_keyb', function (req, res, next) {

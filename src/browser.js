@@ -1,6 +1,7 @@
 var util = require('util'),
     colorize = require('colorize'),
-    events = require('events');
+    events = require('events'),
+    commands = require('./browser.commands');
 
 function log(browser, inOut, message) {
     if(!browser.verbose) {
@@ -20,6 +21,10 @@ function Browser() {
 util.inherits(Browser, events.EventEmitter);
 
 module.exports = Browser;
+
+Object.getOwnPropertyNames(commands).forEach(function(command){
+    Browser.prototype[command] = commands[command];
+});
 
 function _getConnection() {
     if(this._connection) {
@@ -72,7 +77,7 @@ Browser.prototype._sendCommand = function(command, data) {
         delete that.timeouts[data.command];
     });
     // send message
-    log(this, false, data);
+    log(this, true, data);
     this._connection.write(JSON.stringify(data));
 };
 
@@ -87,7 +92,7 @@ Browser.prototype._dataReceiver =  function(dataStr) {
             originalData: dataStr
         };
     }
-    log(this, true, data);
+    log(this, false, data);
     this.emit(data.command || 'log', data);
 };
 
