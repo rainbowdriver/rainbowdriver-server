@@ -1,13 +1,18 @@
 var sockjs   = require('sockjs'),
+    colorize = require('colorize'),
     Browser = require('../src/browser'),
     waitingConnections = [],
     waitingListeners = [];
 
 socket_server = sockjs.createServer();
 socket_server.on('connection', function(connection) {
-    console.log('--- browser connected');
+    colorize.console.log('#magenta[--- browser connected]');
     var browser = new Browser();
+    browser.verbose = true;
     browser.connection = connection;
+    browser.on('close', function() {
+        colorize.console.log('#magenta[--- browser disconnected]');
+    });
     listener = waitingListeners.shift();
     if(listener) {
         respondWithBrowser(browser, listener);
@@ -17,17 +22,26 @@ socket_server.on('connection', function(connection) {
 });
 
 function respondWithBrowser(browser, listener) {
-    console.log('--- binded connections');
+    colorize.console.log('#yellow[--- binded connections]');
     listener(browser);
 }
 
-function getBrowser(callback) {
-    console.log('--- driver connected');
-    var connection = waitingConnections.shift();
+function getBrowser(receiver, filterFn) {
+    colorize.console.log('#magenta[--- driver connected]');
+    var connection,
+        acceptableConnections = waitingConnections;
+    if(filterFn) {
+        acceptableConnections = waitingConnections.filter(filterFn);
+    }
+    connection = acceptableConnections.shift();
     if(connection) {
-        respondWithBrowser(connection, callback);
+        respondWithBrowser(connection, receiver);
+        var index = waitingConnections.indexOf(connection);
+        if(index !== -1) {
+            waitingConnections.splice(index, 1);
+        }
     } else {
-        waitingListeners.push(callback);
+        waitingListeners.push(receiver);
     }
 }
 

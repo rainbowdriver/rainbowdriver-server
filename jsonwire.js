@@ -26,36 +26,6 @@ var os = require('os'),
 
     module.exports = jsonwire;
 
-    function connectionsByBrowserId(id) {
-        return connections.filter(function (conn) {
-            return conn.id === id;
-        });
-    }
-
-    function getAvailableBrowser() {
-        var available = false;
-
-        connections.forEach(function (conn) {
-            var hasSession = false,
-                currentWindows = [];
-
-            if(!conn.sessionId) {
-                currentWindows = connectionsByBrowserId(conn.id);
-                currentWindows.forEach(function (win) {
-                    if (win.sessionId) {
-                        hasSession = true;
-                    }
-                });
-                if(!hasSession) {
-                    available = conn;
-                }
-            }
-
-        });
-
-        return available;
-    }
-
     server.use(restify.bodyParser());
 
     server.use(function wireLogger(req, res, next) {
@@ -96,20 +66,31 @@ var os = require('os'),
     server.post('/wd/hub/session', function (req, res, next) {
         var interval,
             session = {
-                'id' : new Date().getTime(),
+                windows: [],
                 'desiredCapabilities' : JSON.parse(req.body).desiredCapabilities
             };
 
-        sessions[session.id] = session;
+        function removeOldWindow(browser) {
+            session.windows.splice(session.windows.indexOf(browser), 1);
+        }
 
         jsonwire.browser_manager.getBrowser(function(browser) {
-                browser.sessionId = session.id;
+                session.id = browser.id;
                 session.browser = browser;
-                session.connection = browser.connection; // todo: remove that, just retrocompatibility
+                session.windows.push(browser);
+                browser.on('close', removeOldWindow.bind(null, browser));
+                jsonwire.browser_manager.getBrowser(function(browser) {
+                    session.windows.push(browser);
+                    browser.on('close', removeOldWindow.bind(null, browser));
+                }, function(browser) {
+                    return session.browser.id === browser.id;
+                });
                 res.header('Location', "/wd/hub/session/" + session.id);
                 res.send(303);
                 next();
         });
+
+        sessions[session.id] = session;
     });
 
     server.get('/wd/hub/session/:sessionId', function (req, res, next) {
@@ -127,10 +108,9 @@ var os = require('os'),
 
     server.del('/wd/hub/session/:sessionId', function (req, res, next) {
         var session = sessions[req.params.sessionId];
-        var sameBrowserConnections = connectionsByBrowserId(session.connection.id);
 
-        sameBrowserConnections.forEach(function (conn) {
-            conn.end();
+        session.windows.forEach(function (browser) {
+            browser.close();
         });
         delete sessions[req.params.sessionId];
         res.send(204);
@@ -246,8 +226,8 @@ var os = require('os'),
             response = {
                 sessionId: session.id,
                 status: 0,
-                value: connectionsByBrowserId(session.connection.id).map(function (conn) {
-                    return conn.windowName;
+                value: session.windows.map(function(window) {
+                    return window.windowName;
                 })
             };
             res.send(200, response);
