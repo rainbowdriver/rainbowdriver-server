@@ -69,7 +69,9 @@ Browser.prototype._sendCommand = function(command, data) {
     // timeout logic
     var that = this;
     this.timeouts[data.command] = setTimeout(function() {
-        that._connection.close();
+        if(that._connection.close) {
+            that._connection.close();
+        }
         that.emit(data.command, {error: 'timeout'});
     }, 30000);
     this.once(data.command, function() {
@@ -88,8 +90,7 @@ Browser.prototype._dataReceiver =  function(dataStr) {
     } catch (e) {
         data = {
             error: "Invalid JSON received.",
-            message: e.message,
-            originalData: dataStr
+            message: e.message
         };
     }
     log(this, false, data);
