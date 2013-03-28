@@ -69,10 +69,12 @@ Browser.prototype._sendCommand = function(command, data) {
     // timeout logic
     var that = this;
     this.timeouts[data.command] = setTimeout(function() {
+        var error = {error: 'timeout'};
+        log(this, true, error);
         if(that._connection.close) {
             that._connection.close();
         }
-        that.emit(data.command, {error: 'timeout'});
+        that.emit(data.command, error);
     }, 30000);
     this.once(data.command, function() {
         clearTimeout(that.timeouts[data.command]);

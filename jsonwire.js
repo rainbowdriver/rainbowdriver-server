@@ -489,26 +489,22 @@ var os = require('os'),
             element = session.elements && session.elements[req.params.id];
 
         if (element) {
-            session.connection.write(JSON.stringify({
-                command: 'getValue',
+            session.browser.getValue({
                 selector: element.selector.replace(/^selector_/, '')
-            }));
-
-            session.connection.once('data', function (message) {
-                var response = JSON.parse(message);
-                if (response.name === "getElementText") {
-                    res.send(200, {
-                        "name": "getElementText",
-                        "sessionId": req.params.sessionId,
-                        "status": 0,
-                        "value": response.value
-                    });
-                }
+            },
+            function(response) {
+                res.send(200, {
+                    "name": "getElementText",
+                    "sessionId": req.params.sessionId,
+                    "status": 0,
+                    "value": response.value
+                });
+                next();
             });
         } else {
             res.send(404);
+            next();
         }
-        return next();
     });
 
     server.get('/wd/hub/session/:sessionId/element/:id/name', function (req, res, next) {

@@ -30,12 +30,19 @@ module.exports = {
     },
 
     clickElement: function(params, callback) {
-        this._sendCommand('click', {
+        this._sendCommand('clickElement', {
             selector: params.selector,
             button: params.button || 0,
             xoffset: params.xoffset,
             yoffset: params.yoffset
         });
         this.once('clickElement', callback);
+    },
+
+    getValue: function(params, callback) {
+        this._sendCommand('getValue', {
+            selector: params.selector
+        });
+        this.once('getValue', callback);
     }
 };
