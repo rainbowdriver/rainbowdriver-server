@@ -167,7 +167,8 @@ var os = require('os'),
                     selector: element.selector.replace(/^selector_/, ''),
                     xoffset: session.mouse.xoffset,
                     yoffset: session.mouse.yoffset
-                }, function(resp) {
+                },
+                function(response) {
                     response.sessionId = req.params.sessionId;
                     res.send(200, response);
                     next();
@@ -280,23 +281,16 @@ var os = require('os'),
         var session = sessions[req.params.sessionId];
 
         if (session) {
-            session.connection.write(JSON.stringify({
-                command: 'getTitle'
-            }));
-
-            session.connection.once('data', function (message) {
-                var response = JSON.parse(message);
-                if (response.name === "getTitle") {
-                    var response_body = {
-                        "value": response.value
-                    };
-                    res.end(JSON.stringify(response_body));
-                }
+            session.browser.getTitle(function(response) {
+                res.send(200, {
+                    "value": response.value
+                });
+                next();
             });
         } else {
             res.send(404);
+            return next();
         }
-        return next();
     });
 
     server.post('/wd/hub/session/:sessionId/element', function (req, res, next) {
@@ -373,43 +367,33 @@ var os = require('os'),
             return next();
         }
 
-        session.connection.write(JSON.stringify({
-            command: 'findElement',
+        session.browser.findElement({
             selector: session.elements[element_id].selector.replace(/^selector_/, '') + ' ' + JSON.parse(req.body).value
-        }));
-
-        session.connection.once('data', function (message) {
-            var response_body,
-                response = JSON.parse(message);
-
-            if (response.name === "findElement") {
-                if (response.status === 0) {
-                    session.elements[response.elementId] = {
-                        id: response.elementId,
-                        selector: 'selector_' + response.selector
-                    };
-                    response_body = {
-                        "name": "findElement",
-                        "sessionId": req.params.sessionId,
-                        "status": 0,
-                        "value": {
-                            "ELEMENT": response.elementId
-                        }
-                    };
-                    res.send(200, response_body);
-                    next();
-                } else if (response.status === 7) {
-                    response_body = {
-                        "name": "findElement",
-                        "sessionId": req.params.sessionId,
-                        "status": 7,
-                        "value": {}
-                    };
-                    res.contentType = "json";
-                    res.charSet = "UTF-8";
-                    res.send(500, response_body);
-                    next();
-                }
+        }, function(response) {
+            if (response.status === 0) {
+                session.elements[response.elementId] = {
+                    id: response.elementId,
+                    selector: 'selector_' + response.selector
+                };
+                res.send(200, {
+                    "name": "findElement",
+                    "sessionId": req.params.sessionId,
+                    "status": 0,
+                    "value": {
+                        "ELEMENT": response.elementId
+                    }
+                });
+                next();
+            } else if (response.status === 7) {
+                res.contentType = "json";
+                res.charSet = "UTF-8";
+                res.send(500, {
+                    "name": "findElement",
+                    "sessionId": req.params.sessionId,
+                    "status": 7,
+                    "value": {}
+                });
+                next();
             }
         });
     });
@@ -512,26 +496,22 @@ var os = require('os'),
             element = session.elements && session.elements[req.params.id];
 
         if (element) {
-            session.connection.write(JSON.stringify({
-                command: 'getName',
+            session.browser.getName({
                 selector: element.selector.replace(/^selector_/, '')
-            }));
-
-            session.connection.once('data', function (message) {
-                var response = JSON.parse(message);
-                if (response.name === "getElementTagName") {
-                    res.send(200, {
-                        "name": "getElementTagName",
-                        "sessionId": req.params.sessionId,
-                        "status": 0,
-                        "value": response.value
-                    });
-                }
+            },
+            function(response) {
+                res.send(200, {
+                    "name": "getElementTagName",
+                    "sessionId": req.params.sessionId,
+                    "status": 0,
+                    "value": response.value
+                });
+                next();
             });
         } else {
             res.send(404);
+            return next();
         }
-        return next();
     });
 
     server.post('/wd/hub/session/:sessionId/element/:id/clear', function (req, res, next) {
@@ -539,25 +519,21 @@ var os = require('os'),
             element = session.elements && session.elements[req.params.id];
 
         if (element) {
-            session.connection.write(JSON.stringify({
-                command: 'clear',
+            session.browser.clearInput({
                 selector: element.selector.replace(/^selector_/, '')
-            }));
-
-            session.connection.once('data', function (message) {
-                var response = JSON.parse(message);
-                if (response.name === "clear") {
-                    res.send(200, {
-                        "name": "clear",
-                        "sessionId": req.params.sessionId,
-                        "status": 0,
-                    });
-                }
+            },
+            function(response) {
+                res.send(200, {
+                    "name": "clear",
+                    "sessionId": req.params.sessionId,
+                    "status": 0,
+                });
+                next();
             });
         } else {
             res.send(404);
+            return next();
         }
-        return next();
     });
 
     server.get('/wd/hub/session/:sessionId/element/:id/selected', function (req, res, next) {
@@ -565,26 +541,22 @@ var os = require('os'),
             element = session.elements && session.elements[req.params.id];
 
         if (element) {
-            session.connection.write(JSON.stringify({
-                command: 'getSelected',
+            session.browser.getSelected({
                 selector: element.selector.replace(/^selector_/, '')
-            }));
-
-            session.connection.once('data', function (message) {
-                var response = JSON.parse(message);
-                if (response.name === "getSelected") {
-                    res.send(200, {
-                        "name": "getSelected",
-                        "sessionId": req.params.sessionId,
-                        "status": 0,
-                        "value": response.value
-                    });
-                }
+            },
+            function(response) {
+                res.send(200, {
+                    "name": "getSelected",
+                    "sessionId": req.params.sessionId,
+                    "status": 0,
+                    "value": response.value
+                });
+                next();
             });
         } else {
             res.send(404);
+            return next();
         }
-        return next();
     });
 
     server.post('/wd/hub/session/:sessionId/execute', function (req, res, next) {
@@ -595,7 +567,7 @@ var os = require('os'),
                 script: JSON.parse(req.body).script
             }, function(result) {
                 res.send(200, result);
-                return next();
+                next();
             });
 
         } else {
@@ -630,27 +602,23 @@ var os = require('os'),
             element = session.elements && session.elements[req.params.id];
 
         if (element) {
-            session.connection.write(JSON.stringify({
-                command: 'getElementAttribute',
+            session.browser.getElementAttribute({
                 selector: element.selector.replace(/^selector_/, ''),
                 attribute: req.params.name
-            }));
-
-            session.connection.once('data', function (message) {
-                var response = JSON.parse(message);
-                if (response.name === "getElementAttribute") {
-                    res.send(200, {
-                        "name": "getElementAttribute",
-                        "sessionId": req.params.sessionId,
-                        "status": 0,
-                        "value": response.value
-                    });
-                }
+            },
+            function(response) {
+                res.send(200, {
+                    "name": "getElementAttribute",
+                    "sessionId": req.params.sessionId,
+                    "status": 0,
+                    "value": response.value
+                });
+                next();
             });
         } else {
             res.send(404);
+            return next();
         }
-        return next();
     });
 
     server.on('after', function responseLogger(req, res) {

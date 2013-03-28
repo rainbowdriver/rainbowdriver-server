@@ -1,5 +1,20 @@
 
+function selectorOnlyCommand (command) {
+    return function(params, callback) {
+        this._sendCommand(command, {
+            selector: params.selector
+        });
+        this.once(command, callback);
+    };
+}
+
 module.exports = {
+    findElement: selectorOnlyCommand('findElement'),
+    isElementDisplayed: selectorOnlyCommand('isElementDisplayed'),
+    getValue: selectorOnlyCommand('getValue'),
+    getName: selectorOnlyCommand('getName'),
+    getSelected: selectorOnlyCommand('getSelected'),
+
     executeScript: function(params, callback) {
         this._sendCommand('executeScript', {
             script: params.script
@@ -7,19 +22,6 @@ module.exports = {
         this.once('executeScript', callback);
     },
 
-    findElement: function(params, callback) {
-        this._sendCommand('findElement', {
-            selector: params.selector
-        });
-        this.once('findElement', callback);
-    },
-
-    isElementDisplayed: function(params, callback) {
-        this._sendCommand('isElementDisplayed', {
-            selector: params.selector
-        });
-        this.once('isElementDisplayed', callback);
-    },
 
     sendKeys: function(params, callback) {
         this._sendCommand('sendKeysToElement', {
@@ -39,10 +41,17 @@ module.exports = {
         this.once('clickElement', callback);
     },
 
-    getValue: function(params, callback) {
-        this._sendCommand('getValue', {
-            selector: params.selector
+    getElementAttribute: function(params, callback) {
+        this._sendCommand('getElementAttribute', {
+            selector: params.selector,
+            attribute: params.attribute
         });
-        this.once('getValue', callback);
+        this.once('getElementAttribute', callback);
+    },
+
+    getTitle: function (callback) {
+        this._sendCommand('getTitle');
+        this.once('getTitle', callback);
     }
+
 };
