@@ -110,5 +110,7 @@ Browser.prototype._browserData = function (data) {
 };
 
 Browser.prototype.close = function () {
-    this._connection.end();
+    if(this._connection.end) {
+        this._connection.end();
+    }
 };

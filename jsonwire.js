@@ -72,11 +72,14 @@ var os = require('os'),
 
         sessions[session.id] = session;
 
-        console.log('------ expecting browser');
         session.listener = function(browser) {
-            console.log('------ got browser');
             delete session.listener;
             session.browser = browser;
+
+            browser.on('close', function() {
+                delete sessions[session.id];
+            });
+
             res.header('Location', "/wd/hub/session/" + session.id);
             res.send(303);
             next();
@@ -85,15 +88,23 @@ var os = require('os'),
     });
 
     server.get('/wd/hub/session/:sessionId', function (req, res, next) {
-        var session = {
-                'sessionId' : req.params.sessionId,
-                'desiredCapabilities' : sessions[req.params.sessionId].desiredCapabilities,
-                'status': 0,
-                'value': sessions[req.params.sessionId].desiredCapabilities,
-                'proxy': { }
-        };
+        var response,
+            session = sessions[req.params.sessionId];
 
-        res.send(200, session);
+        if (session) {
+            res.send(200, {
+                'sessionId' : '' + session.id, // must be string
+                'desiredCapabilities' : session.desiredCapabilities,
+                'status': 0,
+                'value': session.desiredCapabilities,
+                'proxy': { }
+            });
+        } else {
+            res.send(200, {
+                status: 6,
+                message: "NoSuchDriver"
+            });
+        }
         return next();
     });
 
