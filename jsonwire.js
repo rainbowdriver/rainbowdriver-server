@@ -66,31 +66,22 @@ var os = require('os'),
     server.post('/wd/hub/session', function (req, res, next) {
         var interval,
             session = {
-                windows: [],
+                id: (new Date()).getTime(),
                 'desiredCapabilities' : JSON.parse(req.body).desiredCapabilities
             };
 
-        function removeOldWindow(browser) {
-            session.windows.splice(session.windows.indexOf(browser), 1);
-        }
-
-        jsonwire.browser_manager.getBrowser(function(browser) {
-                session.id = (new Date()).getTime();
-                session.browser = browser;
-                session.windows.push(browser);
-                browser.on('close', removeOldWindow.bind(null, browser));
-                jsonwire.browser_manager.getBrowser(function(browser) {
-                    session.windows.push(browser);
-                    browser.on('close', removeOldWindow.bind(null, browser));
-                }, function(browser) {
-                    return session.browser.id === browser.id;
-                });
-                res.header('Location', "/wd/hub/session/" + session.id);
-                res.send(303);
-                next();
-        });
-
         sessions[session.id] = session;
+
+        console.log('------ expecting browser');
+        session.listener = function(browser) {
+            console.log('------ got browser');
+            delete session.listener;
+            session.browser = browser;
+            res.header('Location', "/wd/hub/session/" + session.id);
+            res.send(303);
+            next();
+        };
+        jsonwire.browser_manager.getBrowser(session.listener);
     });
 
     server.get('/wd/hub/session/:sessionId', function (req, res, next) {
@@ -109,9 +100,12 @@ var os = require('os'),
     server.del('/wd/hub/session/:sessionId', function (req, res, next) {
         var session = sessions[req.params.sessionId];
 
-        session.windows.forEach(function (browser) {
-            browser.close();
-        });
+        if(session.browser) {
+            session.browser.close();
+        }
+        if(session.listener) {
+            sonwire.browser_manager.removeListener(session.listener);
+        }
         delete sessions[req.params.sessionId];
         res.send(204);
         return next();
