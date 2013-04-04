@@ -3,8 +3,27 @@ var os = require('os'),
     colorize = require('colorize'),
     cconsole = {log:function(){}},
     exec = require('child_process').exec,
+    spawn = require('child_process').spawn,
     fs = require("fs"),
     path = require("path");
+
+function runChild(command, args, callback) {
+    var child = spawn(command, args),
+        data = [];
+
+    child.stdout.pipe(process.stdout, { end: false });
+    child.stderr.pipe(process.stderr, { end: false });
+
+    child.stdout.on('data', function(chunk) {
+        data.push(chunk.toString());
+    });
+
+    child.on("exit",function(code, signal){
+        if(callback) {
+            callback(code, data);
+        }
+    });
+}
 
 (function () {
     "use strict";
@@ -589,23 +608,26 @@ var os = require('os'),
 
     server.post('/wd/hub/session/:sessionId/low_level_keyb', function (req, res, next) {
         var session = sessions[req.params.sessionId],
-            commandScript = path.normalize("/helpers/low_level_keyb.ps1 " + JSON.parse(req.body).command),
+            commandScript = path.normalize("/helpers/low_level_keyb.ps1"),
             commandPath = path.resolve(path.dirname(fs.realpathSync(__filename))),
-            command = path.join(commandPath, commandScript);
+            ps1 = path.join(commandPath, commandScript),
+            command = JSON.parse(req.body).command;
 
         if (session) {
-            exec("powershell " + command, function (error, stdout, stderr) {
+            runChild("powershell.exe", [ps1, command],function (error, stdout, stderr) {
                 if (error) {
                     console.log(error);
-                    return;
+                    res.send(500, {});
+                } else {
+                    res.send(200, {});
                 }
-                res.send(200, {});
+                next();
             });
 
         } else {
-            res.send(404);
+            res.send(404, {});
+            return next();
         }
-        return next();
     });
 
     server.get('/wd/hub/session/:sessionId/element/:id/attribute/:name', function (req, res, next) {
