@@ -3,19 +3,12 @@ var sockjs   = require('sockjs'),
     spawn    = require("child_process").spawn;
 
 function runChild(command, args, callback) {
-    var child = spawn(command, args),
+    var child = spawn(command, args, {customFds:[0,1,2]}),
         data = [];
-
-    child.stdout.pipe(process.stdout, { end: false });
-    child.stderr.pipe(process.stderr, { end: false });
-
-    child.stdout.on('data', function(chunk) {
-        data.push(chunk.toString());
-    });
 
     child.on("exit",function(code, signal){
         if(callback) {
-            callback(code, data);
+            callback(code);
         }
     });
 }
