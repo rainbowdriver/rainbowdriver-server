@@ -14,6 +14,7 @@ module.exports = {
     getValue: selectorOnlyCommand('getValue'),
     getName: selectorOnlyCommand('getName'),
     getSelected: selectorOnlyCommand('getSelected'),
+    clearInput: selectorOnlyCommand('clearInput'),
 
     executeScript: function(params, callback) {
         this._sendCommand('executeScript', {
