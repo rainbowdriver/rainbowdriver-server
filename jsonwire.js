@@ -165,8 +165,10 @@ var os = require('os'),
                     status: 0
                 };
                 res.send(200, response);
+                return next();
             } else {
                 res.send(500, {status: 7, sessionId: session.sessionId});
+                return next();
             }
         } else {
             response = {
@@ -174,9 +176,8 @@ var os = require('os'),
                 status: 6
             };
             res.send(500, response);
+            return next();
         }
-
-        return next();
     });
 
     function sendClick(session, element, button, xoffset, yoffset) {
@@ -205,8 +206,10 @@ var os = require('os'),
                     status: 0
                 };
                 res.send(200, response);
+                return next();
             } else {
                 res.send(500, {status: 7, sessionId: session.sessionId});
+                return next();
             }
         } else {
             response = {
@@ -214,9 +217,8 @@ var os = require('os'),
                 status: 6
             };
             res.send(500, response);
+            return next();
         }
-
-        return next();
     });
 
     server.get('/wd/hub/session/:sessionId/window_handle', function (req, res, next) {
@@ -229,15 +231,16 @@ var os = require('os'),
                 value: session.connection.windowName
             };
             res.send(200, response);
+            return next();
         } else {
             response = {
                 sessionId: session.sessionId,
                 status: 6
             };
             res.send(500, response);
+            return next();
         }
 
-        return next();
     });
 
     server.get('/wd/hub/session/:sessionId/window_handles', function (req, res, next) {
@@ -252,28 +255,35 @@ var os = require('os'),
                 })
             };
             res.send(200, response);
+            return next();
         } else {
             response = {
                 sessionId: session.sessionId,
                 status: 6
             };
             res.send(500, response);
+            return next();
         }
-
-        return next();
     });
 
     server.post('/wd/hub/session/:sessionId/window', function (req, res, next) {
         var response,
             session = sessions[req.params.sessionId],
+            windows,
             win;
         try {
-            win = connectionsByBrowserId(session.connection.id).filter(function (win) {
+            windows = connectionsByBrowserId(session.connection.id);
+            win = windows.filter(function (win) {
                 return win.windowName === req.params.name;
             })[0];
         } catch(e) { }
 
         if(session && win) {
+            windows.forEach(function (conn) {
+                if(conn !== win) {
+                    conn.end(); // this adds a lot of stability since windows not always garbage collect the secondary window upon closing it
+                }
+            });
             session.connection = win;
             response = {
                 sessionId: session.id,
@@ -281,6 +291,7 @@ var os = require('os'),
                 value: ""
             };
             res.send(200, response);
+            return next();
         } else {
             var status = 6,
                 statusText = "NoSuchDriver";
@@ -294,9 +305,8 @@ var os = require('os'),
                 message: statusText
             };
             res.send(500, response);
+            return next();
         }
-
-        return next();
     });
 
     server.post('/wd/hub/session/:sessionId/url', function (req, res, next) {
@@ -323,13 +333,14 @@ var os = require('os'),
                     var response_body = {
                         "value": response.value
                     };
-                    res.end(JSON.stringify(response_body));
+                    res.send(200, JSON.stringify(response_body));
+                    return next();
                 }
             });
         } else {
             res.send(404);
+            return next();
         }
-        return next();
     });
 
     server.post('/wd/hub/session/:sessionId/element', function (req, res, next) {
@@ -473,9 +484,9 @@ var os = require('os'),
                         "value": response.value
                     };
                     res.send(200, response_body);
+                    return next();
                 }
             }
-            return next();
         });
     });
 
@@ -503,12 +514,13 @@ var os = require('os'),
                     res.contentType = "json";
                     res.charSet = "UTF-8";
                     res.send(200, response_body);
+                    return next();
                 }
             });
         } else {
             res.send(404);
+            return next();
         }
-        return next();
     });
 
     server.post('/wd/hub/session/:sessionId/element/:id/click', function (req, res, next) {
@@ -522,14 +534,16 @@ var os = require('os'),
                 if (response.name === "clickElement") {
                     response.sessionId = req.params.sessionId;
                     res.send(200, response);
+                    return next();
                 } else {
                     res.send(500);
+                    return next();
                 }
             });
         } else {
             res.send(404);
+            return next();
         }
-        return next();
     });
 
     server.get('/wd/hub/session/:sessionId/element/:id/text', function (req, res, next) {
@@ -551,12 +565,13 @@ var os = require('os'),
                         "status": 0,
                         "value": response.value
                     });
+                    return next();
                 }
             });
         } else {
             res.send(404);
+            return next();
         }
-        return next();
     });
 
     server.get('/wd/hub/session/:sessionId/element/:id/name', function (req, res, next) {
@@ -578,12 +593,13 @@ var os = require('os'),
                         "status": 0,
                         "value": response.value
                     });
+                    return next();
                 }
             });
         } else {
             res.send(404);
+            return next();
         }
-        return next();
     });
 
     server.post('/wd/hub/session/:sessionId/element/:id/clear', function (req, res, next) {
@@ -604,12 +620,13 @@ var os = require('os'),
                         "sessionId": req.params.sessionId,
                         "status": 0,
                     });
+                    return next();
                 }
             });
         } else {
             res.send(404);
+            return next();
         }
-        return next();
     });
 
     server.get('/wd/hub/session/:sessionId/element/:id/selected', function (req, res, next) {
@@ -631,12 +648,13 @@ var os = require('os'),
                         "status": 0,
                         "value": response.value
                     });
+                    return next();
                 }
             });
         } else {
             res.send(404);
+            return next();
         }
-        return next();
     });
 
     server.post('/wd/hub/session/:sessionId/execute', function (req, res, next) {
@@ -651,12 +669,13 @@ var os = require('os'),
                 var response = JSON.parse(message);
                 if (response.name === "executeScript") {
                     res.send(200,response);
+                    return next();
                 }
             });
         } else {
             res.send(404);
+            return next();
         }
-        return next();
     });
 
     server.post('/wd/hub/session/:sessionId/low_level_keyb', function (req, res, next) {
@@ -672,12 +691,13 @@ var os = require('os'),
                     return;
                 }
                 res.send(200, {});
+                return next();
             });
 
         } else {
             res.send(404);
+            return next();
         }
-        return next();
     });
 
     server.get('/wd/hub/session/:sessionId/element/:id/attribute/:name', function (req, res, next) {
@@ -700,12 +720,13 @@ var os = require('os'),
                         "status": 0,
                         "value": response.value
                     });
+                    return next();
                 }
             });
         } else {
             res.send(404);
+            return next();
         }
-        return next();
     });
 
     server.on('after', function responseLogger(req, res) {
