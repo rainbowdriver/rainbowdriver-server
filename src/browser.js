@@ -92,8 +92,11 @@ Browser.prototype._dataReceiver =  function(dataStr) {
     } catch (e) {
         data = {
             error: "Invalid JSON received.",
-            message: e.message
+            message: e.toString()
         };
+        if(typeof dataStr === 'string') {
+            data.originalData = dataStr;
+        }
     }
     log(this, false, data);
     this.emit(data.command || 'log', data);
