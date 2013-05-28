@@ -11,7 +11,7 @@ function selectorOnlyCommand (command) {
 module.exports = {
     findElement: selectorOnlyCommand('findElement'),
     isElementDisplayed: selectorOnlyCommand('isElementDisplayed'),
-    getValue: selectorOnlyCommand('getValue'),
+    getElementText: selectorOnlyCommand('getElementText'),
     getName: selectorOnlyCommand('getName'),
     getSelected: selectorOnlyCommand('getSelected'),
     clearInput: selectorOnlyCommand('clearInput'),

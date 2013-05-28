@@ -503,7 +503,7 @@ function runChild(command, args, callback) {
             element = session.elements && session.elements[req.params.id];
 
         if (element) {
-            session.browser.getValue({
+            session.browser.getElementText({
                 selector: element.selector.replace(/^selector_/, '')
             },
             function(response) {
