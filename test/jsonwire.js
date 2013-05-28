@@ -98,7 +98,7 @@ describe('JSON Wire API', function(){
     });
 
     describe('/wd/hub/session/:sessionId/window_handles', function(){
-        it('respond with a list of current windows', function(done){
+        it.skip('respond with a list of current windows', function(done){
             var expected = {
                     sessionId: "mysession",
                     status: 0,
@@ -137,7 +137,7 @@ describe('JSON Wire API', function(){
                 done();
             });
         });
-        it('should check if element is selected in browser', function(done){
+        it.skip('should check if element is selected in browser', function(done){
             var conn = new StubConnection();
             var foo_selector = '.foo';
             var write_spy = sinon.spy(conn, 'write');
@@ -169,7 +169,7 @@ describe('JSON Wire API', function(){
                 done();
             });
         });
-        it('should clear the element', function(done){
+        it.skip('should clear the element', function(done){
             var conn = new StubConnection(),
                 elementId = "foo";
 
@@ -192,7 +192,7 @@ describe('JSON Wire API', function(){
                 done();
             });
         });
-        it('should findElement an return ID for element in browser', function(done){
+        it.skip('should findElement an return ID for element in browser', function(done){
             var conn = new StubConnection();
             conn.respondWithMock = JSON.stringify({
                 name: 'findElement',
@@ -207,7 +207,7 @@ describe('JSON Wire API', function(){
                 done();
             });
         });
-        it('should find sub elements in browser', function(done){
+        it.skip('should find sub elements in browser', function(done){
             var conn = new StubConnection();
             var foo_selector = '.foo';
             var sub_foo_selector = '.sub.foo';
@@ -248,7 +248,7 @@ describe('JSON Wire API', function(){
                 done();
             });
         });
-        it('proper response when element don\'t exist', function(done){
+        it.skip('proper response when element don\'t exist', function(done){
             var conn = new StubConnection();
             conn.respondWithMock = JSON.stringify({
                 name: 'findElement',
