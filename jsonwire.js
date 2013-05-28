@@ -224,7 +224,7 @@ function runChild(command, args, callback) {
             response = {
                 sessionId: session.id,
                 status: 0,
-                value: session.connection.windowName
+                value: session.browser.connection.windowName
             };
             res.send(200, response);
         } else {
@@ -245,7 +245,7 @@ function runChild(command, args, callback) {
             response = {
                 sessionId: session.id,
                 status: 0,
-                value: session.windows.map(function(window) {
+                value: session.browser.windows.map(function(window) {
                     return window.windowName;
                 })
             };
@@ -266,13 +266,13 @@ function runChild(command, args, callback) {
             session = sessions[req.params.sessionId],
             win;
         try {
-            win = connectionsByBrowserId(session.connection.id).filter(function (win) {
+            win = session.browser.windows.filter(function (win) {
                 return win.windowName === req.params.name;
             })[0];
         } catch(e) { }
 
         if(session && win) {
-            session.connection = win;
+            session.browser.connection = win;
             response = {
                 sessionId: session.id,
                 status: 0,

@@ -7,7 +7,7 @@ function log(browser, inOut, message) {
     if(!browser.verbose) {
         return;
     }
-    colorize.console.log('#yellow[' + (inOut? '>>>': '<<<') + '] browser ' + (browser && browser.id ? browser.id:''));
+    colorize.console.log('#yellow[' + (inOut? '>>>': '<<<') + '] browser ' + (browser && browser.id ? browser.id:'') + '' + ((browser && browser.connection && browser.connection.windowName) || ''));
     console.log('\t' + JSON.stringify(message));
 }
 
@@ -16,6 +16,7 @@ function Browser() {
         return new Browser();
     }
     this.timeouts = {};
+    this.windows = [];
     events.EventEmitter.call(this);
 }
 util.inherits(Browser, events.EventEmitter);
@@ -35,14 +36,12 @@ function _getConnection() {
 }
 
 function _setConnection(connection) {
-    if (this._connection) {
-        throw "Could not override connection";
+    if (this.windows.indexOf(connection) === -1) {
+        throw "Could not set connection to unknown window";
     } else {
-        connection.on('close', this._invalidateConnection.bind(this));
-        connection.on('data', this._dataReceiver.bind(this));
         this._connection = connection;
         this.emit('connected');
-        this.on('ready', this._browserData.bind(this));
+        console.log("-------- WINDOW = " + connection.windowName);
     }
 }
 
@@ -51,12 +50,33 @@ Object.defineProperty(Browser.prototype, 'connection', {
     set: _setConnection
 });
 
-Browser.prototype._invalidateConnection = function() {
-    this.emit('close');
-    this._connection.removeAllListeners();
-    this._connection = {
+Browser.prototype.addWindow = function(window) {
+    console.log('---------- ADD WINDOW ' + window.windowName);
+    window.on('close', this._invalidateConnection.bind(this, window));
+    window.on('data', this._dataReceiver.bind(this));
+    this.windows.push(window);
+    if (this.windows.length === 1) {
+        this.connection = window;
+    }
+};
+
+Browser.prototype._invalidateConnection = function(window) {
+    console.log('---------- REMOVE WINDOW ' + window.windowName);
+    window.removeAllListeners();
+    window = {
         broken : true
     };
+    this.windows.splice(this.windows.indexOf(window), 1);
+    if(this._connection == window) {
+        if(this.windows.length) {
+            this._connection = this.windows[0];
+        } else {
+            this._connection = null;
+        }
+    }
+    if(this.windows.length === 0) {
+        this.emit('close');
+    }
 };
 
 Browser.prototype._sendCommand = function(command, data) {
@@ -100,16 +120,6 @@ Browser.prototype._dataReceiver =  function(dataStr) {
     }
     log(this, false, data);
     this.emit(data.command || 'log', data);
-};
-
-Browser.prototype._browserData = function (data) {
-    var that = this;
-    if(data.command) {
-        delete data.command;
-    }
-    Object.getOwnPropertyNames(data).forEach(function (key) {
-        that[key] = data[key];
-    });
 };
 
 Browser.prototype.close = function () {
