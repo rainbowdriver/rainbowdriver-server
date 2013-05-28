@@ -49,23 +49,26 @@ describe('JSON Wire API', function(){
                     'browser' : 'mockedBrowser'
                 }
             };
-
-            var conn1 = new StubConnection();
-            conn1.id = "handles";
-            conn1.windowName = "FooWindow";
-            api.sessions.mysession = {
-                id: "mysession",
-                connection: conn1
+            var browser = {
+                on: sinon.stub()
             };
-            api.setConnections([conn1]);
+            var sessionId;
 
-            var clock = sinon.useFakeTimers(new Date().getTime(), "Date");
-            var fakeNow = new Date().getTime();
+            api.browser_manager = {
+                getBrowser: function(callback) {
+                    Object.getOwnPropertyNames(api.sessions).forEach(function(sid) {
+                        sessionId = sid;
+                        assert(typeof api.sessions[sessionId].listener === 'function');
+                        callback(browser);
+                    });                    
+                }
+            };
 
             client.post('/wd/hub/session', session, function(err, req, res, obj) {
-                clock.restore();
-                assert.equal(res.headers.location, "/wd/hub/session/" + fakeNow);
+                assert(typeof api.sessions[sessionId].listener === 'undefined');
+                assert(res.headers.location.indexOf("/wd/hub/session/") !== -1);
                 assert.equal(res.statusCode, 303);
+                assert(browser.on.calledOnce);
                 done();
             });
         });
