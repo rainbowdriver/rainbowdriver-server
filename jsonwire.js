@@ -606,15 +606,16 @@ function runChild(command, args, callback) {
         }
     });
 
-    server.post('/wd/hub/session/:sessionId/low_level_keyb', function (req, res, next) {
+    server.post('/wd/hub/session/:sessionId/simulate_keyboard', function (req, res, next) {
         var session = sessions[req.params.sessionId],
-            commandScript = path.normalize("/helpers/low_level_keyb.ps1"),
+            commandScript = path.normalize("/helpers/simulate_keyboard.ps1"),
             commandPath = path.resolve(path.dirname(fs.realpathSync(__filename))),
             ps1 = path.join(commandPath, commandScript),
-            command = JSON.parse(req.body).command;
+            operation = JSON.parse(req.body).operation,
+            keys = JSON.parse(req.body).keys;
 
         if (session) {
-            runChild("powershell.exe", [ps1, command],function (error, stdout, stderr) {
+            runChild("powershell.exe", [ps1, operation, keys], function (error, stdout, stderr) {
                 if (error) {
                     console.log(error);
                     res.send(500, {});

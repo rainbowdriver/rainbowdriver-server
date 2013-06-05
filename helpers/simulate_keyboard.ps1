@@ -13,13 +13,13 @@ $dir = Split-Path $scriptpath
 
 $keyb = new-object WindowsInput.KeyboardSimulator
 
-if ($args.length -eq 1) {
-    Write-Host "Simulating KeyPress "
-    Write-Host $args[0]
-    $keyb.KeyPress($args[0])
-} else  {
-    Write-Host "Simulating ModifiedKeyStroke"
-    Write-Host $args[0]
-    Write-Host $args[1]
-    $keyb.ModifiedKeyStroke($args[0], $args[1])
+if ($args[0] -eq "KeyPress") {
+    Write-Host "Simulating KeyPress" $args[1]
+    $keyb.KeyPress($args[1])
+} elseif ($args[0] -eq "ModifiedKeyStroke") {
+    Write-Host "Simulating ModifiedKeyStroke" $args[1] "+" $args[2]
+    $keyb.ModifiedKeyStroke($args[1], $args[2])
+} elseif ($args[0] -eq "TextEntry") {
+    Write-Host "Simulating TextEntry" $args[1]
+    $keyb.TextEntry($args[1])
 }
