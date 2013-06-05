@@ -58,8 +58,8 @@ function runChild(command, args, callback) {
             this.connections.push(conn);
             if(msgObj.backgroundSupported && /application/i.test(msgObj.windowType)) {
                 this.cconsole.log('#yellow[Trying to close background modal dialog]');
-                runChild("powershell.exe", [__dirname + '\\helpers\\low_level_keyb.ps1 TAB']);
-                runChild("powershell.exe", [__dirname + '\\helpers\\low_level_keyb.ps1 RETURN']);
+                runChild("powershell.exe", [__dirname + '\\helpers\\simulate_keyboard.ps1 KeyPress TAB']);
+                runChild("powershell.exe", [__dirname + '\\helpers\\simulate_keyboard.ps1 KeyPress RETURN']);
                 conn.write(JSON.stringify({
                     internalCommand: 'resetBackgroundSupported'
                 }));
