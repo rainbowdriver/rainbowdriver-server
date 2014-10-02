@@ -357,8 +357,68 @@ function runChild(command, args, callback) {
                     "sessionId": req.params.sessionId,
                     "status": 0,
                     "value": {
-                        "ELEMENT": response.elementId
+                        "ELEMENT": response.elementId.toString()
                     }
+                };
+                res.send(200, response_body);
+                next();
+            } else if (response.status === 7) {
+                response_body = {
+                    "name": "findElement",
+                    "sessionId": req.params.sessionId,
+                    "status": 7,
+                    "value": {}
+                };
+                res.contentType = "json";
+                res.charSet = "UTF-8";
+                res.send(500, response_body);
+                next();
+            }
+        });
+    });
+	
+	server.post('/wd/hub/session/:sessionId/elements', function (req, res, next) {
+        var response,
+            returned_element,
+            session = sessions[req.params.sessionId];
+
+        if (!session) {
+            res.send(404);
+            return next();
+        }
+
+        if (JSON.parse(req.body).using != "css selector") {
+            res.contentType = "json";
+            res.send(501, { value: "Only CSS selectors are supported right now. Sorry about that." });
+            return next();
+        }
+
+        session.elements = session.elements || [];
+
+        session.browser.findElements({
+            selector: JSON.parse(req.body).value
+        },
+        function(response) {
+			console.log("Elements!");
+			console.log(response);
+            var response_body;
+
+            if (response.status === 0) {
+				response.elements.forEach(function (el) {
+					session.elements[el.id] = {
+						id: el.id,
+						selector: 'selector_' + el.selector
+					};
+				});
+			
+                
+                response_body = {
+                    "name": "findElements",
+                    "sessionId": req.params.sessionId,
+                    "status": 0,
+                    "value": response.elements.map(function (el) {
+						return { "ELEMENT": el.id.toString() };
+					})
                 };
                 res.send(200, response_body);
                 next();
